@@ -1,0 +1,13 @@
+name: 'Deploy to On-Premises Kubernetes cluster'
+description: 'Deploys an application in an On-Premises Kubernetes cluster based in a GitOps repository.'
+inputs:
+  k8s-envs:
+    description: 'Multiline input where each line contains the name of a Kubernetes environment defined in the GitOps repository.'
+    required: true
+outputs:
+  test:
+    description: 'Test output'
+
+runs:
+  using: docker
+  image: Dockerfile
