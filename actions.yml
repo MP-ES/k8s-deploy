@@ -1,12 +1,16 @@
-name: 'Deploy to On-Premises Kubernetes cluster'
-description: 'Deploys an application in an On-Premises Kubernetes cluster based in a GitOps repository.'
+name: "Deploy to On-Premises Kubernetes cluster"
+description: "Deploys an application in an On-Premises Kubernetes cluster based in a GitOps repository."
 inputs:
   k8s-envs:
-    description: 'Multiline input where each line contains the name of a Kubernetes environment defined in the GitOps repository.'
+    description: "Multiline input where each line contains the name of a Kubernetes environment defined in the GitOps repository."
     required: true
+  manifest-dir:
+    description: "Path to the manifest directory, with files to be used for deployment."
+    required: false
+    default: "kubernetes"
 outputs:
   test:
-    description: 'Test output'
+    description: "Test output"
 
 runs:
   using: docker

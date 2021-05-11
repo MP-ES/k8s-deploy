@@ -16,12 +16,16 @@ The owner must have a repository named **gitops** with the rules of application 
     k8s-envs: |
       env1
       env2
+
+    # Path to the manifest directory, with files to be used for deployment.
+    # DEFAULT: kubernetes
+    manifest-dir: kubernetes
 ```
 
 ## Developer
 
 ```shell
 # Copy .env.* example file to .env file
-# For simulate a pull request call
+# Simulate a pull request call
 cp src/.env.pr src/.env
 ```

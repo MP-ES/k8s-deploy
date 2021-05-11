@@ -23,7 +23,7 @@ func getK8sEnv(s string) K8sEnv {
 	case infra, dev, app:
 		k.Name = s
 	default:
-		githubactions.Fatalf(fmt.Sprintf("Kubernetes environment '%s' unknown.", s))
+		githubactions.Fatalf(fmt.Sprintf("Kubernetes environment '%s' unknown", s))
 	}
 	return k
 }
