@@ -35,5 +35,10 @@ cp src/.env.pr src/.env
 curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -c 'sh -s -- -b /usr/local/bin'
 
 # Run lint locally
-pushd src/ && golangci-lint run && popd
+# From src directory
+golangci-lint run
+
+# Run tests
+# From src directory
+go test ./...
 ```
