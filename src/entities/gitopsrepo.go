@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"fmt"
 	"k8s-deploy/utils"
 	"os"
 
@@ -21,8 +22,8 @@ func GetGitOpsRepository() GitOpsRepository {
 	}
 
 	gitOpsRepo := GitOpsRepository{}
-	gitOpsRepo.FullName = repoOwner + "/" + gitopsStr
-	gitOpsRepo.Url = utils.GithubUrl + "/" + gitOpsRepo.FullName
+	gitOpsRepo.FullName = fmt.Sprintf("%s/%s", repoOwner, gitopsStr)
+	gitOpsRepo.Url = fmt.Sprint(utils.GithubUrl, gitOpsRepo.FullName)
 
 	return gitOpsRepo
 }

@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"fmt"
 	"k8s-deploy/utils"
 	"os"
 	"strings"
@@ -48,7 +49,7 @@ func getRepository() repository {
 		githubactions.Fatalf("couldn't get the repository name")
 	}
 
-	repository.Url = utils.GithubUrl + repoName
+	repository.Url = fmt.Sprint(utils.GithubUrl, repoName)
 	repository.Name = strings.Split(repoName, "/")[1]
 
 	return repository
