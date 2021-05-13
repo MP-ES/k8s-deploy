@@ -14,8 +14,8 @@ import (
 const manifestDirDefault string = "kubernetes"
 
 type repository struct {
-	Url  string
 	Name string
+	Url  string
 }
 
 type eventRef struct {
@@ -58,11 +58,15 @@ func getRepository() (repository, error) {
 
 	repoName := os.Getenv("GITHUB_REPOSITORY")
 	if repoName == "" {
-		return repository, errors.New("couldn't get the repository name")
+		return repository, errors.New("couldn't get the repository")
 	}
 
+	if repoParts := strings.Split(repoName, "/"); len(repoParts) > 1 {
+		repository.Name = repoParts[1]
+	} else {
+		return repository, errors.New("repository name format different from expected")
+	}
 	repository.Url = fmt.Sprint(utils.GithubUrl, repoName)
-	repository.Name = strings.Split(repoName, "/")[1]
 
 	return repository, nil
 }
