@@ -3,21 +3,21 @@ name: Pull request action test
 on:
   pull_request:
     branches:
-    - main
+      - main
 
 jobs:
   action_test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Call the local action
-      uses: ./
-      id: action
-      with:
-        k8s-envs: |
-          dev
-          app
-    - name: Get the output
-      run: echo "${{ steps.action.outputs.test }}"
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Call the local action
+        uses: ./
+        id: action
+        with:
+          k8s-envs: |
+            dev
+            app
+      - name: Get the output
+        run: echo "${{ steps.action.outputs.test }}"

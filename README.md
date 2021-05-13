@@ -40,5 +40,9 @@ golangci-lint run
 
 # Run tests
 # From src directory
-go test ./...
+go test -race -v -covermode=atomic -coverprofile=coverage.out ./...
+
+# See cover report
+# From src directory
+go tool cover -html=coverage.out
 ```
