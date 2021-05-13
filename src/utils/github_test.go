@@ -7,7 +7,7 @@ import (
 
 type eventRefTest struct {
 	githubRef, expectedType, expectedId string
-	expectError                         string
+	expectedError                       string
 }
 
 var eventRefTests = [...]eventRefTest{
@@ -18,20 +18,17 @@ var eventRefTests = [...]eventRefTest{
 }
 
 func TestGetGithubEventRef(t *testing.T) {
-
 	for _, test := range eventRefTests {
 		eventType, eventId, err := utils.GetGithubEventRef(test.githubRef)
 
 		if eventType != test.expectedType {
 			t.Errorf("event type %s not equal to expected %s", eventType, test.expectedType)
 		}
-
 		if eventId != test.expectedId {
 			t.Errorf("event identifier %s not equal to expected %s", eventId, test.expectedId)
 		}
-
-		if (err != nil && test.expectError == "") || (err != nil && err.Error() != test.expectError) {
-			t.Errorf("event error %s not equal to expected %s", err, test.expectError)
+		if (err != nil && test.expectedError == "") || (err != nil && err.Error() != test.expectedError) {
+			t.Errorf("event error %s not equal to expected %s", err, test.expectedError)
 		}
 	}
 }

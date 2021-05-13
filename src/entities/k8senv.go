@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -17,28 +18,34 @@ const (
 	app   string = "app"
 )
 
-func getK8sEnv(s string) K8sEnv {
+func getK8sEnv(s string) (K8sEnv, error) {
 	var k K8sEnv
 	switch s {
 	case infra, dev, app:
 		k.Name = s
 	default:
-		githubactions.Fatalf(fmt.Sprintf("Kubernetes environment '%s' unknown", s))
+		return k, fmt.Errorf("kubernetes environment '%s' unknown", s)
 	}
-	return k
+	return k, nil
 }
 
-func GetK8sDeployEnvironments() []K8sEnv {
+func GetK8sDeployEnvironments() ([]K8sEnv, error) {
+	k8sEnvs := []K8sEnv{}
+
 	k8sEnvsInput := githubactions.GetInput("k8s-envs")
 	if k8sEnvsInput == "" {
-		githubactions.Fatalf("'k8s-env' is required")
+		return k8sEnvs, errors.New("'k8s-env' is required")
 	}
-	k8sEnvs := []K8sEnv{}
 
 	envs := strings.Split(k8sEnvsInput, "\n")
 	for _, e := range envs {
-		k8sEnvs = append(k8sEnvs, getK8sEnv(e))
+		if kEvent, err := getK8sEnv(e); err == nil {
+			k8sEnvs = append(k8sEnvs, kEvent)
+		} else {
+			return nil, err
+		}
+
 	}
 
-	return k8sEnvs
+	return k8sEnvs, nil
 }
