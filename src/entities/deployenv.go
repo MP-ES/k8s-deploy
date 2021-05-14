@@ -1,19 +1,21 @@
 package entities
 
 import (
+	"errors"
 	"fmt"
 	"k8s-deploy/utils"
 	"os"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/sethvargo/go-githubactions"
 )
 
 const manifestDirDefault string = "kubernetes"
 
 type repository struct {
-	Url  string
 	Name string
+	Url  string
 }
 
 type eventRef struct {
@@ -29,49 +31,63 @@ type DeployEnv struct {
 	manifestDir      string
 }
 
-func GetDeployEnvironment() DeployEnv {
+func GetDeployEnvironment() (DeployEnv, error) {
 	deployEnv := DeployEnv{}
+	var globalErr *multierror.Error
+	var err error
 
-	deployEnv.GitOpsRepository = GetGitOpsRepository()
-	deployEnv.eventRef = geteventReference()
-	deployEnv.Repository = getRepository()
-	deployEnv.k8sEnvs = GetK8sDeployEnvironments()
+	if deployEnv.GitOpsRepository, err = GetGitOpsRepository(); err != nil {
+		globalErr = multierror.Append(globalErr, err)
+	}
+	if deployEnv.eventRef, err = geteventReference(); err != nil {
+		globalErr = multierror.Append(globalErr, err)
+	}
+	if deployEnv.Repository, err = getRepository(); err != nil {
+		globalErr = multierror.Append(globalErr, err)
+	}
+	if deployEnv.k8sEnvs, err = GetK8sDeployEnvironments(); err != nil {
+		globalErr = multierror.Append(globalErr, err)
+	}
 	deployEnv.manifestDir = getManifestDir()
 
-	return deployEnv
+	return deployEnv, globalErr.ErrorOrNil()
 }
 
-func getRepository() repository {
+func getRepository() (repository, error) {
 	repository := repository{}
 
 	repoName := os.Getenv("GITHUB_REPOSITORY")
 	if repoName == "" {
-		githubactions.Fatalf("couldn't get the repository name")
+		return repository, errors.New("couldn't get the repository")
 	}
 
+	if repoParts := strings.Split(repoName, "/"); len(repoParts) > 1 {
+		repository.Name = repoParts[1]
+	} else {
+		return repository, errors.New("repository name format different from expected")
+	}
 	repository.Url = fmt.Sprint(utils.GithubUrl, repoName)
-	repository.Name = strings.Split(repoName, "/")[1]
 
-	return repository
+	return repository, nil
 }
 
-func geteventReference() eventRef {
+func geteventReference() (eventRef, error) {
 	eventRef := eventRef{}
 
 	githubRef := os.Getenv("GITHUB_REF")
 	if githubRef == "" {
-		githubactions.Fatalf("couldn't get the Github reference")
+		return eventRef, errors.New("couldn't get the Github reference")
 	}
 
 	gType, gId, err := utils.GetGithubEventRef(githubRef)
 	if err != nil {
-		githubactions.Fatalf("couldn't get the Github reference")
+		return eventRef, errors.New("github reference different from expected")
 	}
 
 	eventRef.Type = gType
 	eventRef.Identifier = gId
 
-	return eventRef
+	return eventRef, nil
 }
 
 func getManifestDir() string {

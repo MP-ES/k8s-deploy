@@ -1,11 +1,10 @@
 package entities
 
 import (
+	"errors"
 	"fmt"
 	"k8s-deploy/utils"
 	"os"
-
-	"github.com/sethvargo/go-githubactions"
 )
 
 type GitOpsRepository struct {
@@ -15,15 +14,16 @@ type GitOpsRepository struct {
 
 const gitopsStr string = "gitops"
 
-func GetGitOpsRepository() GitOpsRepository {
+func GetGitOpsRepository() (GitOpsRepository, error) {
+	gitOpsRepo := GitOpsRepository{}
+
 	repoOwner := os.Getenv("GITHUB_REPOSITORY_OWNER")
 	if repoOwner == "" {
-		githubactions.Fatalf("'k8s-env' is required")
+		return gitOpsRepo, errors.New("couldn't get the repository owner name")
 	}
 
-	gitOpsRepo := GitOpsRepository{}
 	gitOpsRepo.FullName = fmt.Sprintf("%s/%s", repoOwner, gitopsStr)
 	gitOpsRepo.Url = fmt.Sprint(utils.GithubUrl, gitOpsRepo.FullName)
 
-	return gitOpsRepo
+	return gitOpsRepo, nil
 }

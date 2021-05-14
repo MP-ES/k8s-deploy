@@ -9,7 +9,10 @@ import (
 )
 
 func main() {
-	deployenv := entities.GetDeployEnvironment()
+	deployenv, err := entities.GetDeployEnvironment()
+	if err != nil {
+		githubactions.Fatalf(err.Error())
+	}
 	output := fmt.Sprintf("%+v\n", deployenv)
 
 	fmt.Println(output)
