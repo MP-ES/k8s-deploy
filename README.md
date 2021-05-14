@@ -23,6 +23,9 @@ The owner must have a repository named **gitops** with the rules of application 
     # Path to the manifest directory, with files to be used for deployment.
     # DEFAULT: kubernetes
     manifest-dir: kubernetes
+
+    # GitHub PAT with read permission on gitops repository
+    gitops-token: ${{ secrets.SECRET_NAME }}
 ```
 
 ## Developer

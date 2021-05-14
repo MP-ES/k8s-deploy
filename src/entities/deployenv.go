@@ -76,7 +76,7 @@ func geteventReference() (eventRef, error) {
 
 	githubRef := os.Getenv("GITHUB_REF")
 	if githubRef == "" {
-		return eventRef, errors.New("couldn't get the Github reference")
+		return eventRef, errors.New("couldn't get the GitHub reference")
 	}
 
 	gType, gId, err := utils.GetGithubEventRef(githubRef)

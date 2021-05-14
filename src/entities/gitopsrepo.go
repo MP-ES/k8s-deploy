@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"k8s-deploy/utils"
 	"os"
+
+	"github.com/sethvargo/go-githubactions"
 )
 
 type GitOpsRepository struct {
-	FullName string
-	Url      string
+	Owner string
+	Name  string
+	Url   string
 }
 
 const gitopsStr string = "gitops"
@@ -22,8 +25,14 @@ func GetGitOpsRepository() (GitOpsRepository, error) {
 		return gitOpsRepo, errors.New("couldn't get the repository owner name")
 	}
 
-	gitOpsRepo.FullName = fmt.Sprintf("%s/%s", repoOwner, gitopsStr)
-	gitOpsRepo.Url = fmt.Sprint(utils.GithubUrl, gitOpsRepo.FullName)
+	// check if repository exists
+	token := githubactions.GetInput("gitops-token")
+	fmt.Println(token)
+	utils.GetGithubRepository(token, repoOwner, gitopsStr)
+
+	gitOpsRepo.Owner = repoOwner
+	gitOpsRepo.Name = gitopsStr
+	gitOpsRepo.Url = fmt.Sprintf("%s%s/%s", utils.GithubUrl, gitOpsRepo.Owner, gitOpsRepo.Name)
 
 	return gitOpsRepo, nil
 }

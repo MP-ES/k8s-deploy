@@ -14,7 +14,7 @@ var eventRefTests = [...]eventRefTest{
 	{"refs/heads/main", "heads", "main", ""},
 	{"refs/tags/v1.0.0", "tags", "v1.0.0", ""},
 	{"refs/pull/1/merge", "pull", "1", ""},
-	{"wrong/string", "", "", "unknown Github reference"},
+	{"wrong/string", "", "", "unknown GitHub reference"},
 }
 
 func TestGetGithubEventRef(t *testing.T) {

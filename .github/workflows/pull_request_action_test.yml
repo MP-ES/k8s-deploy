@@ -16,8 +16,10 @@ jobs:
         uses: ./
         id: action
         with:
+          gitops-token: ${{ secrets.GITOPS_TOKEN }}
           k8s-envs: |
             dev
             app
+          manifest-dir: kubernetes
       - name: Get the output
         run: echo "${{ steps.action.outputs.test }}"
