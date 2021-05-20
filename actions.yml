@@ -9,8 +9,8 @@ inputs:
     required: true
     default: "kubernetes"
   gitops-token:
-    description: "GitHub PAT with read permission on GitOps repository"
-    required: true
+    description: "GitHub PAT with read permission on GitOps repository, if gitops is private"
+    required: false
 outputs:
   test:
     description: "Test output"

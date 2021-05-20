@@ -1,21 +1,24 @@
 package entities
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"k8s-deploy/utils"
 	"os"
 
 	"github.com/sethvargo/go-githubactions"
+	"gopkg.in/yaml.v2"
 )
 
 type GitOpsRepository struct {
-	Owner string
-	Name  string
-	Url   string
+	Owner            string
+	Repository       string
+	AvailableK8sEnvs []string
 }
 
 const gitopsStr string = "gitops"
+const schemaFilePath string = "schema.yaml"
 
 func GetGitOpsRepository() (*GitOpsRepository, error) {
 	gitOpsRepo := new(GitOpsRepository)
@@ -28,11 +31,35 @@ func GetGitOpsRepository() (*GitOpsRepository, error) {
 	// check if repository exists
 	token := githubactions.GetInput("gitops-token")
 	gitRepo, err := utils.GetGithubRepository(token, repoOwner, gitopsStr)
-	fmt.Printf("%v %v", gitRepo, err)
+	if err != nil {
+		return nil, err
+	}
 
-	gitOpsRepo.Owner = repoOwner
-	gitOpsRepo.Name = gitopsStr
-	gitOpsRepo.Url = fmt.Sprintf("%s%s/%s", utils.GithubUrl, gitOpsRepo.Owner, gitOpsRepo.Name)
+	// fill struct
+	gitOpsRepo.Owner = *gitRepo.Owner.Login
+	gitOpsRepo.Repository = *gitRepo.Name
+
+	// get schema
+	fileContent, err := utils.GetGithubRepositoryFile(token, gitOpsRepo.Owner, gitOpsRepo.Repository, schemaFilePath)
+	if err != nil {
+		return nil, err
+	}
+	gitOpsRepo.setAvailableK8sEnvs(fileContent.Content)
 
 	return gitOpsRepo, nil
+}
+
+func (*GitOpsRepository) setAvailableK8sEnvs(base64Schema *string) {
+	type envs struct {
+		K8sEnvs string `yaml:"k8s-envs"`
+	}
+	k8sEnvs := envs{}
+	str, _ := base64.StdEncoding.DecodeString(*base64Schema)
+	fmt.Println(string(str))
+	err := yaml.Unmarshal(str, &k8sEnvs)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Value: %s\n", k8sEnvs.K8sEnvs)
 }
