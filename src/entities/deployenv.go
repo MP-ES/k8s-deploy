@@ -24,10 +24,10 @@ type eventRef struct {
 }
 
 type DeployEnv struct {
-	Repository       repository
-	GitOpsRepository GitOpsRepository
-	k8sEnvs          []K8sEnv
-	eventRef         eventRef
+	Repository       *repository
+	GitOpsRepository *GitOpsRepository
+	k8sEnvs          []*K8sEnv
+	eventRef         *eventRef
 	manifestDir      string
 }
 
@@ -53,26 +53,26 @@ func GetDeployEnvironment() (DeployEnv, error) {
 	return deployEnv, globalErr.ErrorOrNil()
 }
 
-func getRepository() (repository, error) {
-	repository := repository{}
+func getRepository() (*repository, error) {
+	repository := new(repository)
 
 	repoName := os.Getenv("GITHUB_REPOSITORY")
 	if repoName == "" {
-		return repository, errors.New("couldn't get the repository")
+		return nil, errors.New("couldn't get the repository")
 	}
 
 	if repoParts := strings.Split(repoName, "/"); len(repoParts) > 1 {
 		repository.Name = repoParts[1]
 	} else {
-		return repository, errors.New("repository name format different from expected")
+		return nil, errors.New("repository name format different from expected")
 	}
 	repository.Url = fmt.Sprint(utils.GithubUrl, repoName)
 
 	return repository, nil
 }
 
-func geteventReference() (eventRef, error) {
-	eventRef := eventRef{}
+func geteventReference() (*eventRef, error) {
+	eventRef := new(eventRef)
 
 	githubRef := os.Getenv("GITHUB_REF")
 	if githubRef == "" {

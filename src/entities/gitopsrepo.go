@@ -17,18 +17,18 @@ type GitOpsRepository struct {
 
 const gitopsStr string = "gitops"
 
-func GetGitOpsRepository() (GitOpsRepository, error) {
-	gitOpsRepo := GitOpsRepository{}
+func GetGitOpsRepository() (*GitOpsRepository, error) {
+	gitOpsRepo := new(GitOpsRepository)
 
 	repoOwner := os.Getenv("GITHUB_REPOSITORY_OWNER")
 	if repoOwner == "" {
-		return gitOpsRepo, errors.New("couldn't get the repository owner name")
+		return nil, errors.New("couldn't get the repository owner name")
 	}
 
 	// check if repository exists
 	token := githubactions.GetInput("gitops-token")
-	fmt.Println(token)
-	utils.GetGithubRepository(token, repoOwner, gitopsStr)
+	gitRepo, err := utils.GetGithubRepository(token, repoOwner, gitopsStr)
+	fmt.Printf("%v %v", gitRepo, err)
 
 	gitOpsRepo.Owner = repoOwner
 	gitOpsRepo.Name = gitopsStr

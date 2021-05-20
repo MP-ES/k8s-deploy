@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/google/go-github/v35/github"
@@ -34,7 +33,7 @@ func GetGithubEventRef(t string) (string, string, error) {
 	return "", "", errors.New("unknown GitHub reference")
 }
 
-func GetGithubRepository(token string, owner string, repo string) {
+func GetGithubRepository(token string, owner string, repo string) (*github.Repository, error) {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
@@ -42,10 +41,9 @@ func GetGithubRepository(token string, owner string, repo string) {
 	tc := oauth2.NewClient(ctx, ts)
 
 	client := github.NewClient(tc)
-	gitRepo, resp, err := client.Repositories.Get(ctx, owner, repo)
+	gitRepo, _, err := client.Repositories.Get(ctx, owner, repo)
 	if err != nil {
-		fmt.Printf("\nerror: %v\n", err)
-		return
+		return nil, err
 	}
-	fmt.Printf("%v\n\n%v", gitRepo, resp)
+	return gitRepo, nil
 }

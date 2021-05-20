@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"k8s-deploy/entities"
 
+	"github.com/gdexlab/go-render/render"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/sethvargo/go-githubactions"
 )
@@ -13,8 +13,7 @@ func main() {
 	if err != nil {
 		githubactions.Fatalf(err.Error())
 	}
-	output := fmt.Sprintf("%+v\n", deployenv)
+	output := render.AsCode(deployenv)
 
-	fmt.Println(output)
 	githubactions.SetOutput("test", output)
 }
