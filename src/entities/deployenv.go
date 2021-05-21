@@ -45,7 +45,7 @@ func GetDeployEnvironment() (DeployEnv, error) {
 	if deployEnv.Repository, err = getRepository(); err != nil {
 		globalErr = multierror.Append(globalErr, err)
 	}
-	if deployEnv.k8sEnvs, err = GetK8sDeployEnvironments(); err != nil {
+	if deployEnv.k8sEnvs, err = GetK8sDeployEnvironments(&deployEnv.GitOpsRepository.AvailableK8sEnvs); err != nil {
 		globalErr = multierror.Append(globalErr, err)
 	}
 	deployEnv.manifestDir = getManifestDir()

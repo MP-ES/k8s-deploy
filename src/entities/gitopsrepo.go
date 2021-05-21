@@ -1,14 +1,13 @@
 package entities
 
 import (
-	"encoding/base64"
 	"errors"
-	"fmt"
 	"k8s-deploy/utils"
 	"os"
+	"regexp"
+	"strings"
 
 	"github.com/sethvargo/go-githubactions"
-	"gopkg.in/yaml.v2"
 )
 
 type GitOpsRepository struct {
@@ -39,27 +38,32 @@ func GetGitOpsRepository() (*GitOpsRepository, error) {
 	gitOpsRepo.Owner = *gitRepo.Owner.Login
 	gitOpsRepo.Repository = *gitRepo.Name
 
-	// get schema
+	// get schema and set envs available
 	fileContent, err := utils.GetGithubRepositoryFile(token, gitOpsRepo.Owner, gitOpsRepo.Repository, schemaFilePath)
 	if err != nil {
 		return nil, err
 	}
-	gitOpsRepo.setAvailableK8sEnvs(fileContent.Content)
+	if err := gitOpsRepo.setAvailableK8sEnvs(fileContent.Content); err != nil {
+		return nil, err
+	}
 
 	return gitOpsRepo, nil
 }
 
-func (*GitOpsRepository) setAvailableK8sEnvs(base64Schema *string) {
-	type envs struct {
-		K8sEnvs string `yaml:"k8s-envs"`
+func (g *GitOpsRepository) setAvailableK8sEnvs(base64Schema *string) error {
+	type envsYaml struct {
+		K8sEnvsEnum string `yaml:"k8s-env"`
 	}
-	k8sEnvs := envs{}
-	str, _ := base64.StdEncoding.DecodeString(*base64Schema)
-	fmt.Println(string(str))
-	err := yaml.Unmarshal(str, &k8sEnvs)
-	if err != nil {
-		panic(err)
+	k8sEnvs := envsYaml{}
+	if err := utils.UnmarshalSingleYamlKeyFromMultifile(base64Schema, &k8sEnvs); err != nil {
+		return err
 	}
 
-	fmt.Printf("Value: %s\n", k8sEnvs.K8sEnvs)
+	// extract data
+	extractedEnvs := strings.Split(k8sEnvs.K8sEnvsEnum, ",")
+	regClean := regexp.MustCompile(`.*"([^"]*)".*`)
+	for _, env := range extractedEnvs {
+		g.AvailableK8sEnvs = append(g.AvailableK8sEnvs, regClean.ReplaceAllString(env, "${1}"))
+	}
+	return nil
 }
