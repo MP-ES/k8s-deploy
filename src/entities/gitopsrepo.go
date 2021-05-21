@@ -13,7 +13,7 @@ import (
 type GitOpsRepository struct {
 	Owner            string
 	Repository       string
-	AvailableK8sEnvs []string
+	AvailableK8sEnvs map[string]struct{}
 }
 
 const gitopsStr string = "gitops"
@@ -60,10 +60,11 @@ func (g *GitOpsRepository) setAvailableK8sEnvs(base64Schema *string) error {
 	}
 
 	// extract data
+	g.AvailableK8sEnvs = make(map[string]struct{})
 	extractedEnvs := strings.Split(k8sEnvs.K8sEnvsEnum, ",")
 	regClean := regexp.MustCompile(`.*"([^"]*)".*`)
 	for _, env := range extractedEnvs {
-		g.AvailableK8sEnvs = append(g.AvailableK8sEnvs, regClean.ReplaceAllString(env, "${1}"))
+		g.AvailableK8sEnvs[regClean.ReplaceAllString(env, "${1}")] = struct{}{}
 	}
 	return nil
 }

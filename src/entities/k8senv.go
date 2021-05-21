@@ -3,7 +3,6 @@ package entities
 import (
 	"errors"
 	"fmt"
-	"k8s-deploy/utils"
 	"strings"
 
 	"github.com/sethvargo/go-githubactions"
@@ -13,14 +12,14 @@ type K8sEnv struct {
 	Name string
 }
 
-func getK8sEnv(availableK8sEnvs *[]string, s string) (*K8sEnv, error) {
-	if !utils.ContainsStr(availableK8sEnvs, s) {
+func getK8sEnv(availableK8sEnvs *map[string]struct{}, s string) (*K8sEnv, error) {
+	if _, ok := (*availableK8sEnvs)[s]; !ok {
 		return nil, fmt.Errorf("kubernetes environment '%s' unknown", s)
 	}
 	return &K8sEnv{Name: s}, nil
 }
 
-func GetK8sDeployEnvironments(availableK8sEnvs *[]string) ([]*K8sEnv, error) {
+func GetK8sDeployEnvironments(availableK8sEnvs *map[string]struct{}) ([]*K8sEnv, error) {
 	k8sEnvs := []*K8sEnv{}
 
 	k8sEnvsInput := githubactions.GetInput("k8s-envs")
@@ -35,7 +34,6 @@ func GetK8sDeployEnvironments(availableK8sEnvs *[]string) ([]*K8sEnv, error) {
 		} else {
 			return nil, err
 		}
-
 	}
 
 	return k8sEnvs, nil
