@@ -12,6 +12,10 @@ type K8sEnv struct {
 	Name string
 }
 
+func (k *K8sEnv) String() string {
+	return k.Name
+}
+
 func getK8sEnv(availableK8sEnvs *map[string]struct{}, s string) (*K8sEnv, error) {
 	if _, ok := (*availableK8sEnvs)[s]; !ok {
 		return nil, fmt.Errorf("kubernetes environment '%s' unknown", s)
