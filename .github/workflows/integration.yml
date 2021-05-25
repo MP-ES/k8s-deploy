@@ -32,6 +32,8 @@ jobs:
           go-version: 1.16
       - name: Run tests
         run: pushd src && go test -v -race -covermode=atomic -coverprofile=coverage.out ./... && popd
+        env:
+          TOKEN_TEST: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
