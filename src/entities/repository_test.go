@@ -1,18 +1,19 @@
-package entities
+package entities_test
 
 import (
+	"k8s-deploy/entities"
 	"os"
 	"testing"
 )
 
 type repositoryTest struct {
 	githubRepository   string
-	expectedRepository *repository
+	expectedRepository *entities.Repository
 	expectedError      string
 }
 
 var repositoryTests = [...]repositoryTest{
-	{"owner/repo", &repository{"repo", "https://github.com/owner/repo"}, ""},
+	{"owner/repository-all", &entities.Repository{"repository-all", "https://github.com/owner/repository-all", nil}, ""},
 	{"", nil, "couldn't get the repository"},
 	{"wrong-string", nil, "repository name format different from expected"},
 }
@@ -23,7 +24,7 @@ func TestGetRepository(t *testing.T) {
 		os.Setenv("GITHUB_REPOSITORY", test.githubRepository)
 		t.Cleanup(func() { os.Setenv("GITHUB_REPOSITORY", orig) })
 
-		repository, err := getRepository()
+		repository, err := entities.GetRepository(&entities.GitOpsRepository{Owner: "MP-ES", Repository: "k8s-deploy", PathSchemas: "testdata"})
 
 		if err != nil {
 			if test.expectedError == "" || err.Error() != test.expectedError {

@@ -2,10 +2,8 @@ package entities
 
 import (
 	"errors"
-	"fmt"
 	"k8s-deploy/utils"
 	"os"
-	"strings"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/sethvargo/go-githubactions"
@@ -13,18 +11,13 @@ import (
 
 const manifestDirDefault string = "kubernetes"
 
-type repository struct {
-	Name string
-	Url  string
-}
-
 type eventRef struct {
 	Type       string
 	Identifier string
 }
 
 type DeployEnv struct {
-	Repository       *repository
+	Repository       *Repository
 	GitOpsRepository *GitOpsRepository
 	k8sEnvs          []*K8sEnv
 	eventRef         *eventRef
@@ -42,7 +35,7 @@ func GetDeployEnvironment() (DeployEnv, error) {
 	if deployEnv.eventRef, err = geteventReference(); err != nil {
 		globalErr = multierror.Append(globalErr, err)
 	}
-	if deployEnv.Repository, err = getRepository(); err != nil {
+	if deployEnv.Repository, err = GetRepository(deployEnv.GitOpsRepository); err != nil {
 		globalErr = multierror.Append(globalErr, err)
 	}
 	if deployEnv.k8sEnvs, err = GetK8sDeployEnvironments(&deployEnv.GitOpsRepository.AvailableK8sEnvs); err != nil {
@@ -51,24 +44,6 @@ func GetDeployEnvironment() (DeployEnv, error) {
 	deployEnv.manifestDir = getManifestDir()
 
 	return deployEnv, globalErr.ErrorOrNil()
-}
-
-func getRepository() (*repository, error) {
-	repository := new(repository)
-
-	repoName := os.Getenv("GITHUB_REPOSITORY")
-	if repoName == "" {
-		return nil, errors.New("couldn't get the repository")
-	}
-
-	if repoParts := strings.Split(repoName, "/"); len(repoParts) > 1 {
-		repository.Name = repoParts[1]
-	} else {
-		return nil, errors.New("repository name format different from expected")
-	}
-	repository.Url = fmt.Sprint(utils.GithubUrl, repoName)
-
-	return repository, nil
 }
 
 func geteventReference() (*eventRef, error) {

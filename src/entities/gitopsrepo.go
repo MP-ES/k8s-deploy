@@ -2,6 +2,7 @@ package entities
 
 import (
 	"errors"
+	"fmt"
 	"k8s-deploy/utils"
 	"os"
 	"regexp"
@@ -13,11 +14,14 @@ import (
 type GitOpsRepository struct {
 	Owner            string
 	Repository       string
+	accessToken      string
 	AvailableK8sEnvs map[string]struct{}
+	PathSchemas      string
 }
 
-const gitopsStr string = "gitops"
-const schemaFilePath string = "schema.yaml"
+const gitOpsStr string = "gitops"
+const deploysDirStr string = "deploys"
+const gitOpsSchemaFile string = "schema.yaml"
 
 func GetGitOpsRepository() (*GitOpsRepository, error) {
 	gitOpsRepo := new(GitOpsRepository)
@@ -29,7 +33,7 @@ func GetGitOpsRepository() (*GitOpsRepository, error) {
 
 	// check if repository exists
 	token := githubactions.GetInput("gitops-token")
-	gitRepo, err := utils.GetGithubRepository(token, repoOwner, gitopsStr)
+	gitRepo, err := utils.GetGithubRepository(token, repoOwner, gitOpsStr)
 	if err != nil {
 		return nil, err
 	}
@@ -37,9 +41,11 @@ func GetGitOpsRepository() (*GitOpsRepository, error) {
 	// fill struct
 	gitOpsRepo.Owner = *gitRepo.Owner.Login
 	gitOpsRepo.Repository = *gitRepo.Name
+	gitOpsRepo.accessToken = token
+	gitOpsRepo.PathSchemas = deploysDirStr
 
 	// get schema and set envs available
-	fileContent, err := utils.GetGithubRepositoryFile(token, gitOpsRepo.Owner, gitOpsRepo.Repository, schemaFilePath)
+	fileContent, err := utils.GetGithubRepositoryFile(gitOpsRepo.accessToken, gitOpsRepo.Owner, gitOpsRepo.Repository, gitOpsSchemaFile)
 	if err != nil {
 		return nil, err
 	}
@@ -67,4 +73,15 @@ func (g *GitOpsRepository) setAvailableK8sEnvs(base64Schema *string) error {
 		g.AvailableK8sEnvs[regClean.ReplaceAllString(env, "${1}")] = struct{}{}
 	}
 	return nil
+}
+
+func (g *GitOpsRepository) GetRepositoryOpsSchema(repoName string) (*string, error) {
+	path := fmt.Sprintf("%s/%s.yaml", g.PathSchemas, repoName)
+
+	fileContent, err := utils.GetGithubRepositoryFile(g.accessToken, g.Owner, g.Repository, path)
+	if err != nil {
+		return nil, err
+	}
+
+	return fileContent.Content, nil
 }
