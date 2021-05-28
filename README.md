@@ -24,7 +24,7 @@ The owner must have a repository named **gitops** with the rules of application 
     # DEFAULT: kubernetes
     manifest-dir: kubernetes
 
-    # GitHub PAT with read permission on gitops repository, if gitops is private
+    # GitHub PAT with read permission on gitOps repository, if gitOps is private
     gitops-token: ${{ secrets.SECRET_NAME }}
 ```
 

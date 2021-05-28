@@ -5,6 +5,8 @@ import (
 	"os"
 	"reflect"
 	"testing"
+
+	"github.com/gdexlab/go-render/render"
 )
 
 type k8sDeployEnvsTest struct {
@@ -41,7 +43,7 @@ func TestGetK8sDeployEnvironments(t *testing.T) {
 			}
 		} else {
 			if !reflect.DeepEqual(k8sEnvs, test.expectedK8sEnvs) {
-				t.Errorf("k8s envs %v not equal to expected %v", k8sEnvs, test.expectedK8sEnvs)
+				t.Errorf("k8s envs\n%s\nnot equal to expected\n%s", render.Render(k8sEnvs), render.Render(test.expectedK8sEnvs))
 			}
 		}
 	}
