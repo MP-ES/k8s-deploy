@@ -1,0 +1,19 @@
+name: repository-all
+k8s-envs:
+- env1
+- env2
+- env3
+secrets:
+- database_user
+- database_password
+resources-quotas:
+  limits.cpu: 100m
+  limits.memory: 100Mi
+requests-ingresses:
+  env1:
+  - application.env1.domain.com
+  env2:
+  - application.env2.domain.com
+  env3:
+  - application.env3.domain.com
+  - application.domain.com

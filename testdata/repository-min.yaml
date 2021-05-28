@@ -1,0 +1,6 @@
+name: repository-min
+k8s-envs:
+- env1
+resources-quotas:
+  limits.cpu: 100m
+  limits.memory: 100Mi
