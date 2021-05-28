@@ -13,7 +13,7 @@ func main() {
 	if err != nil {
 		githubactions.Fatalf(err.Error())
 	}
-	output := render.AsCode(deployenv)
+	output := render.Render(deployenv)
 
 	githubactions.SetOutput("test", output)
 }
