@@ -1,4 +1,4 @@
-name: repo
+name: repository-all
 k8s-envs:
 - env1
 - env2
