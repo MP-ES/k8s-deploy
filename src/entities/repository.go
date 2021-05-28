@@ -19,6 +19,7 @@ type Repository struct {
 			LimitsCpu    string `yaml:"limits.cpu"`
 			LimitsMemory string `yaml:"limits.memory"`
 		} `yaml:"resources-quotas"`
+		RequestsIngresses *map[string][]string `yaml:"requests-ingresses"`
 	}
 }
 
