@@ -23,6 +23,7 @@ var repositoryTests = [...]repositoryTest{
 			&struct {
 				Name            string   "yaml:\"name\""
 				K8sEnvs         []string "yaml:\"k8s-envs,flow\""
+				Images          []string "yaml:\"images,flow\""
 				Secrets         []string "yaml:\"secrets,flow\""
 				ResourcesQuotas *struct {
 					LimitsCpu    string "yaml:\"limits.cpu\""
@@ -31,6 +32,7 @@ var repositoryTests = [...]repositoryTest{
 				RequestsIngresses *map[string][]string "yaml:\"requests-ingresses\""
 			}{"repository-all",
 				[]string{"env1", "env2", "env3"},
+				[]string{"docker_image_one", "docker_image_two"},
 				[]string{"database_user", "database_password"},
 				&struct {
 					LimitsCpu    string "yaml:\"limits.cpu\""
@@ -49,6 +51,7 @@ var repositoryTests = [...]repositoryTest{
 			&struct {
 				Name            string   "yaml:\"name\""
 				K8sEnvs         []string "yaml:\"k8s-envs,flow\""
+				Images          []string "yaml:\"images,flow\""
 				Secrets         []string "yaml:\"secrets,flow\""
 				ResourcesQuotas *struct {
 					LimitsCpu    string "yaml:\"limits.cpu\""
@@ -57,6 +60,7 @@ var repositoryTests = [...]repositoryTest{
 				RequestsIngresses *map[string][]string "yaml:\"requests-ingresses\""
 			}{"repository-min",
 				[]string{"env1"},
+				[]string{"docker_image"},
 				nil,
 				&struct {
 					LimitsCpu    string "yaml:\"limits.cpu\""
