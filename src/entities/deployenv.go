@@ -31,17 +31,18 @@ func GetDeployEnvironment() (DeployEnv, error) {
 
 	if deployEnv.GitOpsRepository, err = GetGitOpsRepository(); err != nil {
 		globalErr = multierror.Append(globalErr, err)
+	} else {
+		if deployEnv.eventRef, err = geteventReference(); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+		if deployEnv.Repository, err = GetRepository(deployEnv.GitOpsRepository); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+		if deployEnv.k8sEnvs, err = GetK8sDeployEnvironments(&deployEnv.GitOpsRepository.AvailableK8sEnvs); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+		deployEnv.manifestDir = getManifestDir()
 	}
-	if deployEnv.eventRef, err = geteventReference(); err != nil {
-		globalErr = multierror.Append(globalErr, err)
-	}
-	if deployEnv.Repository, err = GetRepository(deployEnv.GitOpsRepository); err != nil {
-		globalErr = multierror.Append(globalErr, err)
-	}
-	if deployEnv.k8sEnvs, err = GetK8sDeployEnvironments(&deployEnv.GitOpsRepository.AvailableK8sEnvs); err != nil {
-		globalErr = multierror.Append(globalErr, err)
-	}
-	deployEnv.manifestDir = getManifestDir()
 
 	return deployEnv, globalErr.ErrorOrNil()
 }
