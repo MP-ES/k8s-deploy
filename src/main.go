@@ -15,5 +15,5 @@ func main() {
 	}
 	output := render.Render(deployenv)
 
-	githubactions.SetOutput("test", output)
+	githubactions.SetOutput("status", output)
 }

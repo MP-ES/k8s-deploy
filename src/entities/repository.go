@@ -14,6 +14,7 @@ type Repository struct {
 	Schema *struct {
 		Name            string   `yaml:"name"`
 		K8sEnvs         []string `yaml:"k8s-envs,flow"`
+		Images          []string `yaml:"images,flow"`
 		Secrets         []string `yaml:"secrets,flow"`
 		ResourcesQuotas *struct {
 			LimitsCpu    string `yaml:"limits.cpu"`
