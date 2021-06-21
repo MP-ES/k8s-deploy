@@ -51,6 +51,18 @@ func GetDeployEnvironment() (DeployEnv, error) {
 	return deployEnv, globalErr.ErrorOrNil()
 }
 
+func (d *DeployEnv) ValidateRules() error {
+	var globalErr *multierror.Error
+	// var err error
+
+	// for _, env := range d.k8sEnvs {
+	// 	if err = rules.ValidateAppDeployOnK8sEnv(d.Repository, env); err != nil {
+	// 		globalErr = multierror.Append(globalErr, err)
+	// 	}
+	// }
+	return globalErr.ErrorOrNil()
+}
+
 func geteventReference() (*eventRef, error) {
 	eventRef := new(eventRef)
 

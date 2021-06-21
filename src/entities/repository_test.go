@@ -82,7 +82,7 @@ func TestGetRepository(t *testing.T) {
 
 		if err != nil {
 			if test.expectedError == "" || err.Error() != test.expectedError {
-				t.Errorf("repository error %s not equal to expected %s", err, test.expectedError)
+				t.Errorf("repository error '%s' not equal to expected '%s'", err, test.expectedError)
 			}
 		} else {
 			if !reflect.DeepEqual(repository, test.expectedRepository) {

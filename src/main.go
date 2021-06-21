@@ -9,11 +9,16 @@ import (
 )
 
 func main() {
-	deployenv, err := entities.GetDeployEnvironment()
-	if err != nil {
+	var deployenv entities.DeployEnv
+	var err error
+
+	if deployenv, err = entities.GetDeployEnvironment(); err != nil {
 		githubactions.Fatalf(err.Error())
 	}
-	output := render.Render(deployenv)
+	if err = deployenv.ValidateRules(); err != nil {
+		githubactions.Fatalf(err.Error())
+	}
 
+	output := render.Render(deployenv)
 	githubactions.SetOutput("status", output)
 }

@@ -33,11 +33,11 @@ func TestUnmarshalSingleYamlKeyFromMultifile(t *testing.T) {
 
 		if err != nil {
 			if test.expectedError == "" || !strings.Contains(err.Error(), test.expectedError) {
-				t.Errorf("unmarshal single key error %s not equal to expected %s", err, test.expectedError)
+				t.Errorf("unmarshal single key error '%s' not equal to expected '%s'", err, test.expectedError)
 			}
 		} else {
 			if structData.Data != test.expectedData {
-				t.Errorf("unmarshal single key data %s not equal to expected %s", structData.Data, test.expectedData)
+				t.Errorf("unmarshal single key data '%s' not equal to expected '%s'", structData.Data, test.expectedData)
 			}
 		}
 

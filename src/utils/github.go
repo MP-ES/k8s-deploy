@@ -54,7 +54,7 @@ func GetGithubRepositoryFile(token string, owner string, repo string, path strin
 		return nil, err
 	}
 	if fileContent == nil {
-		return nil, fmt.Errorf("path %s is not a file", path)
+		return nil, fmt.Errorf("path '%s' is not a file", path)
 	}
 
 	return fileContent, nil

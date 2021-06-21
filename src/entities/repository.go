@@ -53,7 +53,7 @@ func (r *Repository) loadGitOpsSchema(gitOpsRepo *GitOpsRepository) error {
 	}
 	fileContent, err := gitOpsRepo.GetRepositoryOpsSchema(r.Name)
 	if err != nil {
-		return fmt.Errorf("couldn't get the schema of %s repository: %s", r.Name, err.Error())
+		return fmt.Errorf("couldn't get the schema of '%s' repository: %s", r.Name, err.Error())
 	}
 
 	// parsing yaml file
