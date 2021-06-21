@@ -11,17 +11,7 @@ import (
 type Repository struct {
 	Name   string
 	Url    string
-	Schema *struct {
-		Name            string   `yaml:"name"`
-		K8sEnvs         []string `yaml:"k8s-envs,flow"`
-		Images          []string `yaml:"images,flow"`
-		Secrets         []string `yaml:"secrets,flow"`
-		ResourcesQuotas *struct {
-			LimitsCpu    string `yaml:"limits.cpu"`
-			LimitsMemory string `yaml:"limits.memory"`
-		} `yaml:"resources-quotas"`
-		RequestsIngresses *map[string][]string `yaml:"requests-ingresses"`
-	}
+	Schema *RepositorySchema
 }
 
 func GetRepository(gitOpsRepo *GitOpsRepository) (*Repository, error) {

@@ -12,7 +12,7 @@ secrets:
 resources-quotas:
   limits.cpu: 100m
   limits.memory: 100Mi
-requests-ingresses:
+ingresses:
   env1:
     - application.env1.domain.com
   env2:

@@ -16,6 +16,15 @@ func (k *K8sEnv) String() string {
 	return k.Name
 }
 
+func (k *K8sEnv) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var output string
+	if err := unmarshal(&output); err != nil {
+		return err
+	}
+	k.Name = output
+	return nil
+}
+
 func getK8sEnv(availableK8sEnvs *map[string]struct{}, s string) (*K8sEnv, error) {
 	if _, ok := (*availableK8sEnvs)[s]; !ok {
 		return nil, fmt.Errorf("kubernetes environment '%s' unknown", s)
