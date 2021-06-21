@@ -3,10 +3,9 @@ package entities_test
 import (
 	"k8s-deploy/entities"
 	"os"
-	"reflect"
 	"testing"
 
-	"github.com/gdexlab/go-render/render"
+	"github.com/go-test/deep"
 )
 
 type repositoryTest struct {
@@ -34,12 +33,12 @@ var repositoryTests = [...]repositoryTest{
 					{Name: "database_password"}},
 				ResourcesQuotas: &entities.ResourcesQuotas{
 					LimitsCpu: "100m", LimitsMemory: "100Mi"},
-				Ingresses: &map[*entities.K8sEnv][]*entities.Ingress{
+				Ingresses: &map[entities.K8sEnv][]*entities.Ingress{
 					{Name: "env1"}: {&entities.Ingress{Name: "application.env1.domain.com"}},
 					{Name: "env2"}: {&entities.Ingress{Name: "application.env2.domain.com"}},
 					{Name: "env3"}: {&entities.Ingress{Name: "application.env3.domain.com"},
-						&entities.Ingress{Name: "application.domain.com"}},
-				}},
+						&entities.Ingress{Name: "application.domain.com"}}},
+			},
 		},
 		""},
 	{"owner/repository-min",
@@ -67,8 +66,9 @@ func TestGetRepository(t *testing.T) {
 				t.Errorf("repository error '%s' not equal to expected '%s'", err, test.expectedError)
 			}
 		} else {
-			if !reflect.DeepEqual(repository, test.expectedRepository) {
-				t.Errorf("repository\n%s\nnot equal to expected\n%s", render.Render(repository), render.Render(test.expectedRepository))
+			if diff := deep.Equal(repository, test.expectedRepository); diff != nil {
+				t.Errorf("repository not equal to expected")
+				t.Error(diff)
 			}
 		}
 	}

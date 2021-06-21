@@ -40,6 +40,5 @@ func TestUnmarshalSingleYamlKeyFromMultifile(t *testing.T) {
 				t.Errorf("unmarshal single key data '%s' not equal to expected '%s'", structData.Data, test.expectedData)
 			}
 		}
-
 	}
 }
