@@ -34,7 +34,7 @@ func GetDeployEnvironment() (DeployEnv, error) {
 	if deployEnv.GitOpsRepository, err = GetGitOpsRepository(); err != nil {
 		globalErr = multierror.Append(globalErr, err)
 	} else {
-		if deployEnv.eventRef, err = geteventReference(); err != nil {
+		if deployEnv.eventRef, err = getEventReference(); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
 		if deployEnv.Repository, err = GetRepository(deployEnv.GitOpsRepository); err != nil {
@@ -53,17 +53,20 @@ func GetDeployEnvironment() (DeployEnv, error) {
 
 func (d *DeployEnv) ValidateRules() error {
 	var globalErr *multierror.Error
-	// var err error
+	var err error
 
-	// for _, env := range d.k8sEnvs {
-	// 	if err = rules.ValidateAppDeployOnK8sEnv(d.Repository, env); err != nil {
-	// 		globalErr = multierror.Append(globalErr, err)
-	// 	}
-	// }
+	// For each K8S environment desired, validating rules for it
+	for _, kEnv := range d.k8sEnvs {
+
+		// check if k8s env is enabled in repository
+		if err = kEnv.IsValidToRepository(d.GitOpsRepository, d.Repository.GitOpsRules, d.eventRef); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+	}
 	return globalErr.ErrorOrNil()
 }
 
-func geteventReference() (*eventRef, error) {
+func getEventReference() (*eventRef, error) {
 	eventRef := new(eventRef)
 
 	githubRef := os.Getenv("GITHUB_REF")
@@ -91,7 +94,7 @@ func getManifestDir() (*string, error) {
 	manifestFullPath := filepath.Join(os.Getenv("RUNNER_WORKSPACE"), manifestDir)
 	fileInfo, err := os.Stat(manifestFullPath)
 	if err != nil {
-		return nil, fmt.Errorf("coldn't access '%s' in workspace: %s", manifestDir, err.Error())
+		return nil, fmt.Errorf("couldn't access '%s' in workspace: %s", manifestDir, err.Error())
 	}
 	if !fileInfo.IsDir() {
 		return nil, errors.New("manifest-dir isn't a folder")

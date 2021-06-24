@@ -19,7 +19,7 @@ var repositoryTests = [...]repositoryTest{
 	{"wrong-string", nil, "repository name format different from expected"},
 	{"owner/repository-all",
 		&entities.Repository{"repository-all", "https://github.com/owner/repository-all",
-			&entities.RepositorySchema{
+			&entities.RepositoryRules{
 				Name: "repository-all",
 				K8sEnvs: []*entities.K8sEnv{{
 					Name: "env1"}, {
@@ -43,7 +43,7 @@ var repositoryTests = [...]repositoryTest{
 		""},
 	{"owner/repository-min",
 		&entities.Repository{"repository-min", "https://github.com/owner/repository-min",
-			&entities.RepositorySchema{
+			&entities.RepositoryRules{
 				Name:            "repository-min",
 				K8sEnvs:         []*entities.K8sEnv{{Name: "env1"}},
 				Images:          []*entities.Image{{Name: "docker_image"}},

@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/gdexlab/go-render v1.0.1
 	github.com/go-test/deep v1.0.7
+	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-github/v35 v35.2.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/joho/godotenv v1.3.0
