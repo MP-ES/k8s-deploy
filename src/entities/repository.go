@@ -9,19 +9,9 @@ import (
 )
 
 type Repository struct {
-	Name   string
-	Url    string
-	Schema *struct {
-		Name            string   `yaml:"name"`
-		K8sEnvs         []string `yaml:"k8s-envs,flow"`
-		Images          []string `yaml:"images,flow"`
-		Secrets         []string `yaml:"secrets,flow"`
-		ResourcesQuotas *struct {
-			LimitsCpu    string `yaml:"limits.cpu"`
-			LimitsMemory string `yaml:"limits.memory"`
-		} `yaml:"resources-quotas"`
-		RequestsIngresses *map[string][]string `yaml:"requests-ingresses"`
-	}
+	Name        string
+	Url         string
+	GitOpsRules *RepositoryRules
 }
 
 func GetRepository(gitOpsRepo *GitOpsRepository) (*Repository, error) {
@@ -53,11 +43,11 @@ func (r *Repository) loadGitOpsSchema(gitOpsRepo *GitOpsRepository) error {
 	}
 	fileContent, err := gitOpsRepo.GetRepositoryOpsSchema(r.Name)
 	if err != nil {
-		return fmt.Errorf("couldn't get the schema of %s repository: %s", r.Name, err.Error())
+		return fmt.Errorf("couldn't get the gitOps rules of '%s' repository: %s", r.Name, err.Error())
 	}
 
 	// parsing yaml file
-	if err := utils.UnmarshalSingleYamlKeyFromMultifile(fileContent, &r.Schema); err != nil {
+	if err := utils.UnmarshalSingleYamlKeyFromMultifile(fileContent, &r.GitOpsRules); err != nil {
 		return err
 	}
 

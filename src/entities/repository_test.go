@@ -3,10 +3,9 @@ package entities_test
 import (
 	"k8s-deploy/entities"
 	"os"
-	"reflect"
 	"testing"
 
-	"github.com/gdexlab/go-render/render"
+	"github.com/go-test/deep"
 )
 
 type repositoryTest struct {
@@ -20,53 +19,35 @@ var repositoryTests = [...]repositoryTest{
 	{"wrong-string", nil, "repository name format different from expected"},
 	{"owner/repository-all",
 		&entities.Repository{"repository-all", "https://github.com/owner/repository-all",
-			&struct {
-				Name            string   "yaml:\"name\""
-				K8sEnvs         []string "yaml:\"k8s-envs,flow\""
-				Images          []string "yaml:\"images,flow\""
-				Secrets         []string "yaml:\"secrets,flow\""
-				ResourcesQuotas *struct {
-					LimitsCpu    string "yaml:\"limits.cpu\""
-					LimitsMemory string "yaml:\"limits.memory\""
-				} "yaml:\"resources-quotas\""
-				RequestsIngresses *map[string][]string "yaml:\"requests-ingresses\""
-			}{"repository-all",
-				[]string{"env1", "env2", "env3"},
-				[]string{"docker_image_one", "docker_image_two"},
-				[]string{"database_user", "database_password"},
-				&struct {
-					LimitsCpu    string "yaml:\"limits.cpu\""
-					LimitsMemory string "yaml:\"limits.memory\""
-				}{"100m", "100Mi"},
-				&map[string][]string{
-					"env1": {"application.env1.domain.com"},
-					"env2": {"application.env2.domain.com"},
-					"env3": {"application.env3.domain.com", "application.domain.com"},
-				},
+			&entities.RepositoryRules{
+				Name: "repository-all",
+				K8sEnvs: []*entities.K8sEnv{{
+					Name: "env1"}, {
+					Name: "env2"}, {
+					Name: "env3"}},
+				Images: []*entities.Image{
+					{Name: "docker_image_one"},
+					{Name: "docker_image_two"}},
+				Secrets: []*entities.Secret{
+					{Name: "database_user"},
+					{Name: "database_password"}},
+				ResourcesQuotas: &entities.ResourcesQuotas{
+					LimitsCpu: "100m", LimitsMemory: "100Mi"},
+				Ingresses: &map[entities.K8sEnv][]*entities.Ingress{
+					{Name: "env1"}: {&entities.Ingress{Name: "application.env1.domain.com"}},
+					{Name: "env2"}: {&entities.Ingress{Name: "application.env2.domain.com"}},
+					{Name: "env3"}: {&entities.Ingress{Name: "application.env3.domain.com"},
+						&entities.Ingress{Name: "application.domain.com"}}},
 			},
 		},
 		""},
 	{"owner/repository-min",
 		&entities.Repository{"repository-min", "https://github.com/owner/repository-min",
-			&struct {
-				Name            string   "yaml:\"name\""
-				K8sEnvs         []string "yaml:\"k8s-envs,flow\""
-				Images          []string "yaml:\"images,flow\""
-				Secrets         []string "yaml:\"secrets,flow\""
-				ResourcesQuotas *struct {
-					LimitsCpu    string "yaml:\"limits.cpu\""
-					LimitsMemory string "yaml:\"limits.memory\""
-				} "yaml:\"resources-quotas\""
-				RequestsIngresses *map[string][]string "yaml:\"requests-ingresses\""
-			}{"repository-min",
-				[]string{"env1"},
-				[]string{"docker_image"},
-				nil,
-				&struct {
-					LimitsCpu    string "yaml:\"limits.cpu\""
-					LimitsMemory string "yaml:\"limits.memory\""
-				}{"100m", "100Mi"},
-				nil,
+			&entities.RepositoryRules{
+				Name:            "repository-min",
+				K8sEnvs:         []*entities.K8sEnv{{Name: "env1"}},
+				Images:          []*entities.Image{{Name: "docker_image"}},
+				ResourcesQuotas: &entities.ResourcesQuotas{LimitsCpu: "100m", LimitsMemory: "100Mi"},
 			},
 		},
 		""},
@@ -82,11 +63,12 @@ func TestGetRepository(t *testing.T) {
 
 		if err != nil {
 			if test.expectedError == "" || err.Error() != test.expectedError {
-				t.Errorf("repository error %s not equal to expected %s", err, test.expectedError)
+				t.Errorf("repository error '%s' not equal to expected '%s'", err, test.expectedError)
 			}
 		} else {
-			if !reflect.DeepEqual(repository, test.expectedRepository) {
-				t.Errorf("repository\n%s\nnot equal to expected\n%s", render.Render(repository), render.Render(test.expectedRepository))
+			if diff := deep.Equal(repository, test.expectedRepository); diff != nil {
+				t.Errorf("repository not equal to expected")
+				t.Error(diff)
 			}
 		}
 	}

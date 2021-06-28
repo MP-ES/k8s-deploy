@@ -3,10 +3,9 @@ package entities_test
 import (
 	"k8s-deploy/entities"
 	"os"
-	"reflect"
 	"testing"
 
-	"github.com/gdexlab/go-render/render"
+	"github.com/go-test/deep"
 )
 
 type k8sDeployEnvsTest struct {
@@ -39,11 +38,12 @@ func TestGetK8sDeployEnvironments(t *testing.T) {
 
 		if err != nil {
 			if test.expectedError == "" || err.Error() != test.expectedError {
-				t.Errorf("k8s envs error %s not equal to expected %s", err, test.expectedError)
+				t.Errorf("k8s envs error '%s' not equal to expected '%s'", err, test.expectedError)
 			}
 		} else {
-			if !reflect.DeepEqual(k8sEnvs, test.expectedK8sEnvs) {
-				t.Errorf("k8s envs\n%s\nnot equal to expected\n%s", render.Render(k8sEnvs), render.Render(test.expectedK8sEnvs))
+			if diff := deep.Equal(k8sEnvs, test.expectedK8sEnvs); diff != nil {
+				t.Errorf("k8s envs not equal to expected")
+				t.Error(diff)
 			}
 		}
 	}

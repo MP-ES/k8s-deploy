@@ -25,7 +25,7 @@ func TestGetGitOpsRepository(t *testing.T) {
 		_, err := entities.GetGitOpsRepository()
 
 		if err.Error() != test.expectedError {
-			t.Errorf("gitOps error %s not equal to expected %s", err, test.expectedError)
+			t.Errorf("gitOps error '%s' not equal to expected '%s'", err, test.expectedError)
 		}
 	}
 }

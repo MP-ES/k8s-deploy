@@ -12,11 +12,12 @@ import (
 )
 
 type GitOpsRepository struct {
-	Owner            string
-	Repository       string
-	accessToken      string
-	AvailableK8sEnvs map[string]struct{}
-	PathSchemas      string
+	Owner                string
+	Repository           string
+	accessToken          string
+	AvailableK8sEnvs     map[string]struct{}
+	AvailableK8sEnvsToPR map[string]struct{}
+	PathSchemas          string
 }
 
 const gitOpsStr string = "gitops"
@@ -58,7 +59,8 @@ func GetGitOpsRepository() (*GitOpsRepository, error) {
 
 func (g *GitOpsRepository) setAvailableK8sEnvs(base64Schema *string) error {
 	type envsYaml struct {
-		K8sEnvsEnum string `yaml:"k8s-env"`
+		K8sEnvsEnum     string `yaml:"k8s-env"`
+		K8sEnvsToPREnum string `yaml:"k8s-envs-available-to-pr"`
 	}
 	k8sEnvs := envsYaml{}
 	if err := utils.UnmarshalSingleYamlKeyFromMultifile(base64Schema, &k8sEnvs); err != nil {
@@ -67,11 +69,20 @@ func (g *GitOpsRepository) setAvailableK8sEnvs(base64Schema *string) error {
 
 	// extract data
 	g.AvailableK8sEnvs = make(map[string]struct{})
+	g.AvailableK8sEnvsToPR = make(map[string]struct{})
+
 	extractedEnvs := strings.Split(k8sEnvs.K8sEnvsEnum, ",")
+	extractedEnvsToPR := strings.Split(k8sEnvs.K8sEnvsToPREnum, ",")
+
 	regClean := regexp.MustCompile(`.*"([^"]*)".*`)
+
 	for _, env := range extractedEnvs {
 		g.AvailableK8sEnvs[regClean.ReplaceAllString(env, "${1}")] = struct{}{}
 	}
+	for _, env := range extractedEnvsToPR {
+		g.AvailableK8sEnvsToPR[regClean.ReplaceAllString(env, "${1}")] = struct{}{}
+	}
+
 	return nil
 }
 
