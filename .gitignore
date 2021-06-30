@@ -1,5 +1,6 @@
 # Kubernetes
 kubernetes/
+.deploy/
 
 # Binaries for programs and plugins
 *.exe

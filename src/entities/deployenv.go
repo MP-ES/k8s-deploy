@@ -3,6 +3,7 @@ package entities
 import (
 	"errors"
 	"fmt"
+	"k8s-deploy/infra"
 	"k8s-deploy/utils"
 	"os"
 	"path/filepath"
@@ -62,6 +63,12 @@ func (d *DeployEnv) ValidateRules() error {
 		if err = kEnv.IsValidToRepository(d.GitOpsRepository, d.Repository.GitOpsRules, d.eventRef); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
+
+		// build application kustomize
+		if err = infra.KustomizeApplicationBuild(d.manifestDir, &kEnv.Name); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+
 	}
 	return globalErr.ErrorOrNil()
 }
