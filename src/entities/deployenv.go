@@ -15,8 +15,10 @@ import (
 const manifestDirDefault string = "kubernetes"
 
 type eventRef struct {
-	Type       string
-	Identifier string
+	Type           string
+	Identifier     string
+	CommitSHA      string
+	CommitShortSHA string
 }
 
 type DeployEnv struct {
@@ -46,6 +48,14 @@ func GetDeployEnvironment() (DeployEnv, error) {
 		}
 		if deployEnv.manifestDir, err = getManifestDir(); err != nil {
 			globalErr = multierror.Append(globalErr, err)
+		}
+
+		if globalErr == nil {
+			if err = infra.GenerateDeploymentStructure(&deployEnv.GitOpsRepository.AvailableK8sEnvs,
+				deployEnv.Repository.Name, deployEnv.Repository.Url,
+				deployEnv.eventRef.Type, deployEnv.eventRef.Identifier, deployEnv.eventRef.CommitShortSHA); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
 		}
 	}
 
@@ -78,16 +88,23 @@ func getEventReference() (*eventRef, error) {
 
 	githubRef := os.Getenv("GITHUB_REF")
 	if githubRef == "" {
-		return eventRef, errors.New("couldn't get the GitHub reference")
+		return nil, errors.New("couldn't get the GitHub reference")
 	}
+	githubSHA := os.Getenv("GITHUB_SHA")
+	if githubSHA == "" {
+		return nil, errors.New("couldn't get the commit SHA")
+	}
+	runes := []rune(githubSHA)
 
 	gType, gId, err := utils.GetGithubEventRef(githubRef)
 	if err != nil {
-		return eventRef, errors.New("github reference different from expected")
+		return nil, errors.New("github reference different from expected")
 	}
 
 	eventRef.Type = gType
 	eventRef.Identifier = gId
+	eventRef.CommitSHA = githubSHA
+	eventRef.CommitShortSHA = string(runes[0:7])
 
 	return eventRef, nil
 }

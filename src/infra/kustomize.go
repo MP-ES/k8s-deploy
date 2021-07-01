@@ -10,13 +10,10 @@ import (
 	"sigs.k8s.io/kustomize/api/resmap"
 )
 
-const deploymentDir string = "../.deploy"
-
 func KustomizeApplicationBuild(manifestDir *string, kEnv *string) error {
 	var res resmap.ResMap
 	var yaml []byte
 	var err error
-	var yaml_path string
 
 	kustomizer := krusty.MakeKustomizer(krusty.MakeDefaultOptions())
 	fSys := filesys.MakeFsOnDisk()
@@ -31,10 +28,7 @@ func KustomizeApplicationBuild(manifestDir *string, kEnv *string) error {
 	if yaml, err = res.AsYaml(); err != nil {
 		return fmt.Errorf("error on generate YAML kustomize of the application: %s", err.Error())
 	}
-	if yaml_path, err = getYAMLApplicationPath(kEnv); err != nil {
-		return fmt.Errorf("error on generate YAML path to save kustomize of the application: %s", err.Error())
-	}
-	if err = fSys.WriteFile(yaml_path, yaml); err != nil {
+	if err = fSys.WriteFile(getYAMLApplicationPath(kEnv), yaml); err != nil {
 		return fmt.Errorf("error on save YAML kustomize of the application: %s", err.Error())
 	}
 
@@ -50,10 +44,6 @@ func getApplicationBuildDir(manifestDir *string, kEnv *string) string {
 	return dir
 }
 
-func getYAMLApplicationPath(kEnv *string) (string, error) {
-	err := os.MkdirAll(deploymentDir, os.ModePerm)
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(deploymentDir, "app"+*kEnv+".yaml"), nil
+func getYAMLApplicationPath(kEnv *string) string {
+	return filepath.Join(DeploymentDir, *kEnv, "application.yaml")
 }
