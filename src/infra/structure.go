@@ -1,46 +1,61 @@
 package infra
 
 import (
+	"k8s-deploy/utils"
 	"os"
 	"path/filepath"
 	"text/template"
 )
 
 const DeploymentDir string = "../.deploy"
-const PullRequestKEnv string = "pr"
 const templatesDir string = "templates"
 
 func GenerateDeploymentStructure(kEnvs *map[string]struct{}, repoName string, repoUrl string,
 	eventType string, eventIdentifier string, eventSHA string) error {
-	// main folders
-	if err := os.MkdirAll(DeploymentDir, os.ModePerm); err != nil {
+	// main folder
+	if err := recreateDeployDir(); err != nil {
 		return err
 	}
 
-	for kEnv := range *kEnvs {
-		if err := generateK8sEnvFiles(kEnv); err != nil {
+	// pull request deploy
+	if eventType == utils.EventTypePullRequest {
+		if err := generateK8sEnvFiles(utils.K8SEnvPullRequest, repoName, repoUrl, eventType, eventIdentifier, eventSHA); err != nil {
 			return err
+		}
+		// other events
+	} else {
+		for kEnv := range *kEnvs {
+			if err := generateK8sEnvFiles(kEnv, repoName, repoUrl, eventType, eventIdentifier, eventSHA); err != nil {
+				return err
+			}
 		}
 	}
 
-	// include pull request
-	if err := generateK8sEnvFiles(PullRequestKEnv); err != nil {
+	return nil
+}
+
+func recreateDeployDir() error {
+	if err := os.RemoveAll(DeploymentDir); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(DeploymentDir, os.ModePerm); err != nil {
 		return err
 	}
 	return nil
 }
 
-func generateK8sEnvFiles(kEnv string) error {
+func generateK8sEnvFiles(kEnv string, repoName string, repoUrl string,
+	eventType string, eventIdentifier string, eventSHA string) error {
 	if err := os.MkdirAll(filepath.Join(DeploymentDir, kEnv), os.ModePerm); err != nil {
 		return err
 	}
 
 	// kustomization.yaml
-	if err := addTemplate("kustomization.yaml", kEnv, GenerateKustomizationData(kEnv)); err != nil {
+	if err := addTemplate("kustomization.yaml", kEnv, GenerateKustomizationTmplData(repoName, eventType, eventIdentifier, eventSHA)); err != nil {
 		return err
 	}
 	// namespace.yaml
-	if err := addTemplate("namespace.yaml", kEnv, nil); err != nil {
+	if err := addTemplate("namespace.yaml", kEnv, GenerateNamespaceTmplData(repoName, eventType, eventIdentifier)); err != nil {
 		return err
 	}
 

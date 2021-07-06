@@ -2,6 +2,7 @@ package infra
 
 import (
 	"fmt"
+	"k8s-deploy/utils"
 	"os"
 	"path/filepath"
 
@@ -10,7 +11,7 @@ import (
 	"sigs.k8s.io/kustomize/api/resmap"
 )
 
-func KustomizeApplicationBuild(manifestDir *string, kEnv *string) error {
+func KustomizeApplicationBuild(manifestDir string, kEnv string, eventType string) error {
 	var res resmap.ResMap
 	var yaml []byte
 	var err error
@@ -28,22 +29,28 @@ func KustomizeApplicationBuild(manifestDir *string, kEnv *string) error {
 	if yaml, err = res.AsYaml(); err != nil {
 		return fmt.Errorf("error on generate YAML kustomize of the application: %s", err.Error())
 	}
-	if err = fSys.WriteFile(getYAMLApplicationPath(kEnv), yaml); err != nil {
+	if err = fSys.WriteFile(getYAMLApplicationPath(kEnv, eventType), yaml); err != nil {
 		return fmt.Errorf("error on save YAML kustomize of the application: %s", err.Error())
 	}
 
 	return nil
 }
 
-func getApplicationBuildDir(manifestDir *string, kEnv *string) string {
-	dir := filepath.Join(*manifestDir, *kEnv)
+func getApplicationBuildDir(manifestDir string, kEnv string) string {
+	dir := filepath.Join(manifestDir, kEnv)
 	fileInfo, err := os.Stat(dir)
 	if err != nil || !fileInfo.IsDir() {
-		return *manifestDir
+		return manifestDir
 	}
 	return dir
 }
 
-func getYAMLApplicationPath(kEnv *string) string {
-	return filepath.Join(DeploymentDir, *kEnv, "application.yaml")
+func getYAMLApplicationPath(kEnv string, eventType string) string {
+	var dir string
+	if eventType == utils.EventTypePullRequest {
+		dir = utils.K8SEnvPullRequest
+	} else {
+		dir = kEnv
+	}
+	return filepath.Join(DeploymentDir, dir, "application.yaml")
 }

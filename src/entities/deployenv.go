@@ -66,19 +66,24 @@ func (d *DeployEnv) ValidateRules() error {
 	var globalErr *multierror.Error
 	var err error
 
-	// For each K8S environment desired, validating rules for it
-	for _, kEnv := range d.k8sEnvs {
+	// global validations
+	if err = ValidateK8sEnvs(d.k8sEnvs, d.eventRef.Type); err != nil {
+		globalErr = multierror.Append(globalErr, err)
+	} else {
+		// for each K8S environment desired, validating rules for it
+		for _, kEnv := range d.k8sEnvs {
 
-		// check if k8s env is enabled in repository
-		if err = kEnv.IsValidToRepository(d.GitOpsRepository, d.Repository.GitOpsRules, d.eventRef); err != nil {
-			globalErr = multierror.Append(globalErr, err)
+			// check if k8s env is enabled in repository
+			if err = kEnv.IsValidToRepository(d.GitOpsRepository, d.Repository.GitOpsRules, d.eventRef); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
+			// build application kustomize
+			if err = infra.KustomizeApplicationBuild(*d.manifestDir, kEnv.Name, d.eventRef.Type); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
 		}
-
-		// build application kustomize
-		if err = infra.KustomizeApplicationBuild(d.manifestDir, &kEnv.Name); err != nil {
-			globalErr = multierror.Append(globalErr, err)
-		}
-
 	}
 	return globalErr.ErrorOrNil()
 }

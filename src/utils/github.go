@@ -11,14 +11,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const GithubUrl string = "https://github.com/"
-
-const (
-	EventTypePullRequest string = "pull"
-	EventTypeTag         string = "tags"
-	EventTypeHead        string = "heads"
-)
-
 func GetGithubEventRef(t string) (string, string, error) {
 	ident := strings.Split(t, "/")
 	if strings.Contains(t, EventTypePullRequest) {

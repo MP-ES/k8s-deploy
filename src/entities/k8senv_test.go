@@ -2,6 +2,7 @@ package entities_test
 
 import (
 	"k8s-deploy/entities"
+	"k8s-deploy/utils"
 	"os"
 	"testing"
 
@@ -45,6 +46,29 @@ func TestGetK8sDeployEnvironments(t *testing.T) {
 				t.Errorf("k8s envs not equal to expected")
 				t.Error(diff)
 			}
+		}
+	}
+}
+
+type k8sEnvsTest struct {
+	K8sEnvs       []*entities.K8sEnv
+	eventType     string
+	expectedError string
+}
+
+var k8sEnvsTests = [...]k8sEnvsTest{
+	{[]*entities.K8sEnv{{Name: "test1"}}, utils.EventTypePullRequest, ""},
+	{[]*entities.K8sEnv{{Name: "test1"}}, utils.EventTypeHead, ""},
+	{[]*entities.K8sEnv{{Name: "test1"}, {Name: "test3"}, {Name: "test2"}}, utils.EventTypeHead, ""},
+	{[]*entities.K8sEnv{{Name: "test1"}, {Name: "test3"}, {Name: "test2"}}, utils.EventTypePullRequest, "multiple K8s environments on pull request events are not allowed"},
+}
+
+func TestValidateK8sEnvs(t *testing.T) {
+	for _, test := range k8sEnvsTests {
+		err := entities.ValidateK8sEnvs(test.K8sEnvs, test.eventType)
+
+		if (err == nil && test.expectedError != "") || (err != nil && test.expectedError == "") {
+			t.Errorf("validate error '%v' not equal to expected '%s'", err, test.expectedError)
 		}
 	}
 }

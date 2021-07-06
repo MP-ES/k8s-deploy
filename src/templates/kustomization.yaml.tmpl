@@ -3,6 +3,9 @@ kind: Kustomization
 
 namespace: {{ .Namespace }}
 
+commonLabels:
+  build: {{ .CommitSHA }}
+
 resources:
   - application.yaml
   - namespace.yaml
