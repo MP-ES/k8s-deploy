@@ -52,9 +52,8 @@ func GetDeployEnvironment() (DeployEnv, error) {
 		}
 
 		if globalErr == nil {
-			if err = infra.GenerateDeploymentStructure(&deployEnv.GitOpsRepository.AvailableK8sEnvs,
-				deployEnv.Repository.Name, deployEnv.eventRef.Type, deployEnv.eventRef.Identifier,
-				deployEnv.eventRef.CommitShortSHA, deployEnv.eventRef.Url); err != nil {
+			if err = infra.GenerateInitialDeploymentStructure(&deployEnv.GitOpsRepository.AvailableK8sEnvs,
+				deployEnv.eventRef.Type); err != nil {
 				globalErr = multierror.Append(globalErr, err)
 			}
 		}

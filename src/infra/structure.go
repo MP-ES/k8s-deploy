@@ -10,12 +10,31 @@ import (
 const DeploymentDir string = "../.deploy"
 const templatesDir string = "templates"
 
-func GenerateDeploymentStructure(kEnvs *map[string]struct{}, repoName string,
-	eventType string, eventIdentifier string, eventSHA string, eventUrl string) error {
+func GenerateInitialDeploymentStructure(kEnvs *map[string]struct{}, eventType string) error {
 	// main folder
 	if err := recreateDeployDir(); err != nil {
 		return err
 	}
+
+	// pull request deploy
+	if eventType == utils.EventTypePullRequest {
+		if err := os.MkdirAll(filepath.Join(DeploymentDir, utils.K8SEnvPullRequest), os.ModePerm); err != nil {
+			return err
+		}
+		// other events
+	} else {
+		for kEnv := range *kEnvs {
+			if err := os.MkdirAll(filepath.Join(DeploymentDir, kEnv), os.ModePerm); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func GenerateDeploymentFiles(kEnvs *map[string]struct{}, repoName string,
+	eventType string, eventIdentifier string, eventSHA string, eventUrl string) error {
 
 	// pull request deploy
 	if eventType == utils.EventTypePullRequest {
@@ -46,9 +65,6 @@ func recreateDeployDir() error {
 
 func generateK8sEnvFiles(kEnv string, repoName string, eventType string,
 	eventIdentifier string, eventSHA string, eventUrl string) error {
-	if err := os.MkdirAll(filepath.Join(DeploymentDir, kEnv), os.ModePerm); err != nil {
-		return err
-	}
 
 	// kustomization.yaml
 	if err := addTemplate("kustomization.yaml", kEnv, GenerateKustomizationTmplData(repoName, eventType, eventIdentifier, eventSHA, eventUrl)); err != nil {
