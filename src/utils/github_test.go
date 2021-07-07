@@ -34,6 +34,28 @@ func TestGetGithubEventRef(t *testing.T) {
 	}
 }
 
+type eventUrlTest struct {
+	repoUrl, eventType, eventIdentifier string
+	expectedEventUrl                    string
+}
+
+var eventUrlTests = [...]eventUrlTest{
+	{"https://github.com/user/repo", "heads", "main", "https://github.com/user/repo/tree/main"},
+	{"https://github.com/user/repo", "tags", "v1.0.0", "https://github.com/user/repo/releases/tag/v1.0.0"},
+	{"https://github.com/user/repo", "pull", "1", "https://github.com/user/repo/pull/1"},
+	{"https://github.com/user/repo", "", "", "https://github.com/user/repo"},
+}
+
+func TestGetGithubEventUrl(t *testing.T) {
+	for _, test := range eventUrlTests {
+		eventUrl := utils.GetGithubEventUrl(test.repoUrl, test.eventType, test.eventIdentifier)
+
+		if eventUrl != test.expectedEventUrl {
+			t.Errorf("event url '%s' not equal to expected '%s'", eventUrl, test.expectedEventUrl)
+		}
+	}
+}
+
 type githubRepositoryTest struct {
 	token, owner, repo string
 	expectedError      string
