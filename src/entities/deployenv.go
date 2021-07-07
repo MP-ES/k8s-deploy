@@ -19,6 +19,7 @@ type eventRef struct {
 	Identifier     string
 	CommitSHA      string
 	CommitShortSHA string
+	Url            string
 }
 
 type DeployEnv struct {
@@ -37,10 +38,10 @@ func GetDeployEnvironment() (DeployEnv, error) {
 	if deployEnv.GitOpsRepository, err = GetGitOpsRepository(); err != nil {
 		globalErr = multierror.Append(globalErr, err)
 	} else {
-		if deployEnv.eventRef, err = getEventReference(); err != nil {
+		if deployEnv.Repository, err = GetRepository(deployEnv.GitOpsRepository); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
-		if deployEnv.Repository, err = GetRepository(deployEnv.GitOpsRepository); err != nil {
+		if deployEnv.eventRef, err = getEventReference(deployEnv.Repository.Url); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
 		if deployEnv.k8sEnvs, err = GetK8sDeployEnvironments(&deployEnv.GitOpsRepository.AvailableK8sEnvs); err != nil {
@@ -52,8 +53,8 @@ func GetDeployEnvironment() (DeployEnv, error) {
 
 		if globalErr == nil {
 			if err = infra.GenerateDeploymentStructure(&deployEnv.GitOpsRepository.AvailableK8sEnvs,
-				deployEnv.Repository.Name, deployEnv.Repository.Url,
-				deployEnv.eventRef.Type, deployEnv.eventRef.Identifier, deployEnv.eventRef.CommitShortSHA); err != nil {
+				deployEnv.Repository.Name, deployEnv.eventRef.Type, deployEnv.eventRef.Identifier,
+				deployEnv.eventRef.CommitShortSHA, deployEnv.eventRef.Url); err != nil {
 				globalErr = multierror.Append(globalErr, err)
 			}
 		}
@@ -88,7 +89,7 @@ func (d *DeployEnv) ValidateRules() error {
 	return globalErr.ErrorOrNil()
 }
 
-func getEventReference() (*eventRef, error) {
+func getEventReference(repoUrl string) (*eventRef, error) {
 	eventRef := new(eventRef)
 
 	githubRef := os.Getenv("GITHUB_REF")
@@ -99,7 +100,7 @@ func getEventReference() (*eventRef, error) {
 	if githubSHA == "" {
 		return nil, errors.New("couldn't get the commit SHA")
 	}
-	runes := []rune(githubSHA)
+	runesSHA := []rune(githubSHA)
 
 	gType, gId, err := utils.GetGithubEventRef(githubRef)
 	if err != nil {
@@ -109,7 +110,8 @@ func getEventReference() (*eventRef, error) {
 	eventRef.Type = gType
 	eventRef.Identifier = gId
 	eventRef.CommitSHA = githubSHA
-	eventRef.CommitShortSHA = string(runes[0:7])
+	eventRef.CommitShortSHA = string(runesSHA[0:7])
+	eventRef.Url = utils.GetGithubEventUrl(repoUrl, eventRef.Type, eventRef.Identifier)
 
 	return eventRef, nil
 }

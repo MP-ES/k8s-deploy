@@ -10,8 +10,8 @@ import (
 const DeploymentDir string = "../.deploy"
 const templatesDir string = "templates"
 
-func GenerateDeploymentStructure(kEnvs *map[string]struct{}, repoName string, repoUrl string,
-	eventType string, eventIdentifier string, eventSHA string) error {
+func GenerateDeploymentStructure(kEnvs *map[string]struct{}, repoName string,
+	eventType string, eventIdentifier string, eventSHA string, eventUrl string) error {
 	// main folder
 	if err := recreateDeployDir(); err != nil {
 		return err
@@ -19,13 +19,13 @@ func GenerateDeploymentStructure(kEnvs *map[string]struct{}, repoName string, re
 
 	// pull request deploy
 	if eventType == utils.EventTypePullRequest {
-		if err := generateK8sEnvFiles(utils.K8SEnvPullRequest, repoName, repoUrl, eventType, eventIdentifier, eventSHA); err != nil {
+		if err := generateK8sEnvFiles(utils.K8SEnvPullRequest, repoName, eventType, eventIdentifier, eventSHA, eventUrl); err != nil {
 			return err
 		}
 		// other events
 	} else {
 		for kEnv := range *kEnvs {
-			if err := generateK8sEnvFiles(kEnv, repoName, repoUrl, eventType, eventIdentifier, eventSHA); err != nil {
+			if err := generateK8sEnvFiles(kEnv, repoName, eventType, eventIdentifier, eventSHA, eventUrl); err != nil {
 				return err
 			}
 		}
@@ -44,14 +44,14 @@ func recreateDeployDir() error {
 	return nil
 }
 
-func generateK8sEnvFiles(kEnv string, repoName string, repoUrl string,
-	eventType string, eventIdentifier string, eventSHA string) error {
+func generateK8sEnvFiles(kEnv string, repoName string, eventType string,
+	eventIdentifier string, eventSHA string, eventUrl string) error {
 	if err := os.MkdirAll(filepath.Join(DeploymentDir, kEnv), os.ModePerm); err != nil {
 		return err
 	}
 
 	// kustomization.yaml
-	if err := addTemplate("kustomization.yaml", kEnv, GenerateKustomizationTmplData(repoName, eventType, eventIdentifier, eventSHA)); err != nil {
+	if err := addTemplate("kustomization.yaml", kEnv, GenerateKustomizationTmplData(repoName, eventType, eventIdentifier, eventSHA, eventUrl)); err != nil {
 		return err
 	}
 	// namespace.yaml
