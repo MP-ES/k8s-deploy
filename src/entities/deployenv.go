@@ -83,6 +83,14 @@ func (d *DeployEnv) ValidateRules() error {
 				globalErr = multierror.Append(globalErr, err)
 			}
 
+			// get app deploy path
+			appDeployPath := infra.GetYAMLApplicationPath(kEnv.Name, d.eventRef.Type)
+
+			// validate images
+			if err = ValidateImagesFromAppDeploy(appDeployPath, d.Repository.GitOpsRules); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
 		}
 	}
 	return globalErr.ErrorOrNil()

@@ -29,7 +29,7 @@ func KustomizeApplicationBuild(manifestDir string, kEnv string, eventType string
 	if yaml, err = res.AsYaml(); err != nil {
 		return fmt.Errorf("error on generate YAML kustomize of the application: %s", err.Error())
 	}
-	if err = fSys.WriteFile(getYAMLApplicationPath(kEnv, eventType), yaml); err != nil {
+	if err = fSys.WriteFile(GetYAMLApplicationPath(kEnv, eventType), yaml); err != nil {
 		return fmt.Errorf("error on save YAML kustomize of the application: %s", err.Error())
 	}
 
@@ -45,7 +45,7 @@ func getApplicationBuildDir(manifestDir string, kEnv string) string {
 	return dir
 }
 
-func getYAMLApplicationPath(kEnv string, eventType string) string {
+func GetYAMLApplicationPath(kEnv string, eventType string) string {
 	var dir string
 	if eventType == utils.EventTypePullRequest {
 		dir = utils.K8SEnvPullRequest

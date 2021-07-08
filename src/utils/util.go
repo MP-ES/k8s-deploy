@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/base64"
 	"io"
+	"os"
+	"regexp"
 
 	"gopkg.in/yaml.v2"
 )
@@ -26,4 +29,32 @@ func UnmarshalSingleYamlKeyFromMultifile(base64FileContent *string, out interfac
 		}
 	}
 	return nil
+}
+
+func SearchPatternInFileLineByLine(fileName string, pattern string) ([]string, error) {
+	file, err := os.Open(fileName)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	regex, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	matchList := []string{}
+
+	fileScanner := bufio.NewScanner(file)
+	for fileScanner.Scan() {
+		line := fileScanner.Text()
+		if regex.MatchString(line) {
+			matchList = append(matchList, line)
+		}
+	}
+
+	if err := fileScanner.Err(); err != nil {
+		return nil, err
+	}
+	return matchList, nil
 }
