@@ -34,8 +34,9 @@ func ValidateImagesFromAppDeploy(appDeployPath string, repoRules *RepositoryRule
 	for _, line := range imageLines {
 		image := sanitizeImageLine(line, regex)
 		if image != nil {
-			// validar imagem
-			fmt.Printf("%s", *image)
+			if !repoRules.IsImageEnabled(*image) {
+				return fmt.Errorf("image '%s' is not enabled in repository '%s'. Check the GitOps repository", *image, repoRules.Name)
+			}
 		}
 	}
 
