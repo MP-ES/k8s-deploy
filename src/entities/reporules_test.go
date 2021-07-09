@@ -29,3 +29,28 @@ func TestIsK8sEnvEnabled(t *testing.T) {
 		}
 	}
 }
+
+type imageEnabledTest struct {
+	images         []*entities.Image
+	imageName      string
+	expectedResult bool
+}
+
+var imageEnabledTests = [...]imageEnabledTest{
+	{[]*entities.Image{}, "image", false},
+	{[]*entities.Image{{Name: "image"}}, "image", true},
+	{[]*entities.Image{{Name: "image"}}, "image2", false},
+	{[]*entities.Image{{Name: "image1"}, {Name: "image2"}}, "image2", true},
+}
+
+func TestIsImageEnabled(t *testing.T) {
+	for _, test := range imageEnabledTests {
+		repoRules := entities.RepositoryRules{Images: test.images}
+
+		res := repoRules.IsImageEnabled(test.imageName)
+
+		if res != test.expectedResult {
+			t.Errorf("enabled test for image '%s' not equal to expected '%t'", test.imageName, res)
+		}
+	}
+}
