@@ -11,5 +11,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/sethvargo/go-githubactions v0.4.0
 	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
-	gopkg.in/yaml.v2 v2.2.2
+	gopkg.in/yaml.v2 v2.4.0
+	sigs.k8s.io/kustomize/api v0.8.10
+	sigs.k8s.io/yaml v1.2.0
 )

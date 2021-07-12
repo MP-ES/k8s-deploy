@@ -17,3 +17,12 @@ func (r *RepositoryRules) IsK8sEnvEnabled(kEnv *K8sEnv) bool {
 	}
 	return false
 }
+
+func (r *RepositoryRules) IsImageEnabled(imageName string) bool {
+	for _, i := range r.Images {
+		if i.Name == imageName {
+			return true
+		}
+	}
+	return false
+}

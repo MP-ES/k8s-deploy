@@ -11,28 +11,33 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const GithubUrl string = "https://github.com/"
-
-const (
-	EventTypePullRequest string = "pull"
-	EventTypeTag         string = "tags"
-	EventTypeHead        string = "heads"
-)
-
-func GetGithubEventRef(t string) (string, string, error) {
-	ident := strings.Split(t, "/")
-	if strings.Contains(t, EventTypePullRequest) {
+func GetGithubEventRef(githubRef string) (string, string, error) {
+	ident := strings.Split(githubRef, "/")
+	if strings.Contains(githubRef, EventTypePullRequest) {
 		return EventTypePullRequest, ident[2], nil
 	}
 
-	if strings.Contains(t, EventTypeHead) {
+	if strings.Contains(githubRef, EventTypeHead) {
 		return EventTypeHead, ident[2], nil
 	}
 
-	if strings.Contains(t, EventTypeTag) {
+	if strings.Contains(githubRef, EventTypeTag) {
 		return EventTypeTag, ident[2], nil
 	}
 	return "", "", errors.New("unknown GitHub reference")
+}
+
+func GetGithubEventUrl(repoUrl string, eventType string, eventIdentifier string) string {
+	if eventType == EventTypePullRequest {
+		return fmt.Sprintf("%s/%s/%s", repoUrl, eventType, eventIdentifier)
+	}
+	if eventType == EventTypeTag {
+		return fmt.Sprintf("%s/releases/tag/%s", repoUrl, eventIdentifier)
+	}
+	if eventType == EventTypeHead {
+		return fmt.Sprintf("%s/tree/%s", repoUrl, eventIdentifier)
+	}
+	return repoUrl
 }
 
 func GetGithubRepository(token string, owner string, repo string) (*github.Repository, error) {

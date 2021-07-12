@@ -3,6 +3,7 @@ package entities
 import (
 	"errors"
 	"fmt"
+	"k8s-deploy/infra"
 	"k8s-deploy/utils"
 	"os"
 	"path/filepath"
@@ -14,8 +15,11 @@ import (
 const manifestDirDefault string = "kubernetes"
 
 type eventRef struct {
-	Type       string
-	Identifier string
+	Type           string
+	Identifier     string
+	CommitSHA      string
+	CommitShortSHA string
+	Url            string
 }
 
 type DeployEnv struct {
@@ -34,10 +38,10 @@ func GetDeployEnvironment() (DeployEnv, error) {
 	if deployEnv.GitOpsRepository, err = GetGitOpsRepository(); err != nil {
 		globalErr = multierror.Append(globalErr, err)
 	} else {
-		if deployEnv.eventRef, err = getEventReference(); err != nil {
+		if deployEnv.Repository, err = GetRepository(deployEnv.GitOpsRepository); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
-		if deployEnv.Repository, err = GetRepository(deployEnv.GitOpsRepository); err != nil {
+		if deployEnv.eventRef, err = getEventReference(deployEnv.Repository.Url); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
 		if deployEnv.k8sEnvs, err = GetK8sDeployEnvironments(&deployEnv.GitOpsRepository.AvailableK8sEnvs); err != nil {
@@ -45,6 +49,13 @@ func GetDeployEnvironment() (DeployEnv, error) {
 		}
 		if deployEnv.manifestDir, err = getManifestDir(); err != nil {
 			globalErr = multierror.Append(globalErr, err)
+		}
+
+		if globalErr == nil {
+			if err = infra.GenerateInitialDeploymentStructure(&deployEnv.GitOpsRepository.AvailableK8sEnvs,
+				deployEnv.eventRef.Type); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
 		}
 	}
 
@@ -55,32 +66,59 @@ func (d *DeployEnv) ValidateRules() error {
 	var globalErr *multierror.Error
 	var err error
 
-	// For each K8S environment desired, validating rules for it
-	for _, kEnv := range d.k8sEnvs {
+	// global validations
+	if err = ValidateK8sEnvs(d.k8sEnvs, d.eventRef.Type); err != nil {
+		globalErr = multierror.Append(globalErr, err)
+	} else {
+		// for each K8S environment desired, validating rules for it
+		for _, kEnv := range d.k8sEnvs {
 
-		// check if k8s env is enabled in repository
-		if err = kEnv.IsValidToRepository(d.GitOpsRepository, d.Repository.GitOpsRules, d.eventRef); err != nil {
-			globalErr = multierror.Append(globalErr, err)
+			// check if k8s env is enabled in repository
+			if err = kEnv.IsValidToRepository(d.GitOpsRepository, d.Repository.GitOpsRules, d.eventRef); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
+			// build application kustomize
+			if err = infra.KustomizeApplicationBuild(*d.manifestDir, kEnv.Name, d.eventRef.Type); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
+			// get app deploy path
+			appDeployPath := infra.GetYAMLApplicationPath(kEnv.Name, d.eventRef.Type)
+
+			// validate images
+			if err = ValidateImagesFromAppDeploy(appDeployPath, d.Repository.GitOpsRules); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
 		}
 	}
 	return globalErr.ErrorOrNil()
 }
 
-func getEventReference() (*eventRef, error) {
+func getEventReference(repoUrl string) (*eventRef, error) {
 	eventRef := new(eventRef)
 
 	githubRef := os.Getenv("GITHUB_REF")
 	if githubRef == "" {
-		return eventRef, errors.New("couldn't get the GitHub reference")
+		return nil, errors.New("couldn't get the GitHub reference")
 	}
+	githubSHA := os.Getenv("GITHUB_SHA")
+	if githubSHA == "" {
+		return nil, errors.New("couldn't get the commit SHA")
+	}
+	runesSHA := []rune(githubSHA)
 
 	gType, gId, err := utils.GetGithubEventRef(githubRef)
 	if err != nil {
-		return eventRef, errors.New("github reference different from expected")
+		return nil, errors.New("github reference different from expected")
 	}
 
 	eventRef.Type = gType
 	eventRef.Identifier = gId
+	eventRef.CommitSHA = githubSHA
+	eventRef.CommitShortSHA = string(runesSHA[0:7])
+	eventRef.Url = utils.GetGithubEventUrl(repoUrl, eventRef.Type, eventRef.Identifier)
 
 	return eventRef, nil
 }

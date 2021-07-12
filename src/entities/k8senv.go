@@ -67,3 +67,12 @@ func GetK8sDeployEnvironments(availableK8sEnvs *map[string]struct{}) ([]*K8sEnv,
 
 	return k8sEnvs, nil
 }
+
+func ValidateK8sEnvs(K8sEnvs []*K8sEnv, eventType string) error {
+	if eventType == utils.EventTypePullRequest {
+		if len(K8sEnvs) > 1 {
+			return fmt.Errorf("multiple K8s environments on pull request events are not allowed")
+		}
+	}
+	return nil
+}
