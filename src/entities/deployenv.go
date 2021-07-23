@@ -91,6 +91,11 @@ func (d *DeployEnv) ValidateRules() error {
 				globalErr = multierror.Append(globalErr, err)
 			}
 
+			// validate secrets
+			if err = ValidateSecretsFromAppDeploy(appDeployPath, d.Repository.GitOpsRules); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
 		}
 	}
 	return globalErr.ErrorOrNil()

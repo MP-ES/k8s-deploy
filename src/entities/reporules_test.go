@@ -54,3 +54,28 @@ func TestIsImageEnabled(t *testing.T) {
 		}
 	}
 }
+
+type secretEnabledTest struct {
+	secrets        []*entities.Secret
+	secretName     string
+	expectedResult bool
+}
+
+var secretEnabledTests = [...]secretEnabledTest{
+	{[]*entities.Secret{}, "secret", false},
+	{[]*entities.Secret{{Name: "secret"}}, "secret", true},
+	{[]*entities.Secret{{Name: "secret"}}, "secret2", false},
+	{[]*entities.Secret{{Name: "secret1"}, {Name: "secret2"}}, "secret2", true},
+}
+
+func TestIsSecretEnabled(t *testing.T) {
+	for _, test := range secretEnabledTests {
+		repoRules := entities.RepositoryRules{Secrets: test.secrets}
+
+		res := repoRules.IsSecretEnabled(test.secretName)
+
+		if res != test.expectedResult {
+			t.Errorf("enabled test for secret '%s' not equal to expected '%t'", test.secretName, res)
+		}
+	}
+}

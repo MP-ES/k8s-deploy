@@ -26,3 +26,12 @@ func (r *RepositoryRules) IsImageEnabled(imageName string) bool {
 	}
 	return false
 }
+
+func (r *RepositoryRules) IsSecretEnabled(secretName string) bool {
+	for _, s := range r.Secrets {
+		if s.Name == secretName {
+			return true
+		}
+	}
+	return false
+}
