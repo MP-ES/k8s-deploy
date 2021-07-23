@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -57,4 +58,22 @@ func SearchPatternInFileLineByLine(fileName string, pattern string) ([]string, e
 		return nil, err
 	}
 	return matchList, nil
+}
+
+func Map(vs []string, f func(string) string) []string {
+	vsm := make([]string, len(vs))
+	for i, v := range vs {
+		vsm[i] = f(v)
+	}
+	return vsm
+}
+
+func RemoveEmptyElements(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if strings.TrimSpace(str) != "" {
+			r = append(r, str)
+		}
+	}
+	return r
 }

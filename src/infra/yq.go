@@ -2,6 +2,7 @@ package infra
 
 import (
 	"bytes"
+	"k8s-deploy/utils"
 	"strings"
 
 	"github.com/mikefarah/yq/v4/pkg/yqlib"
@@ -17,5 +18,6 @@ func YqSearchQueryInFileWithStringSliceReturn(fileName string, query string) ([]
 		return nil, err
 	}
 
-	return strings.Split(out.String(), "\n"), nil
+	returnedSlice := strings.Split(out.String(), "\n")
+	return utils.RemoveEmptyElements(utils.Map(returnedSlice, strings.TrimSpace)), nil
 }
