@@ -60,7 +60,11 @@ func SearchPatternInFileLineByLine(fileName string, pattern string) ([]string, e
 	return matchList, nil
 }
 
-func Map(vs []string, f func(string) string) []string {
+func MapStrFunctionInStrSlice(vs []string, f func(string) string) []string {
+	if vs == nil || f == nil {
+		return vs
+	}
+
 	vsm := make([]string, len(vs))
 	for i, v := range vs {
 		vsm[i] = f(v)
@@ -69,7 +73,11 @@ func Map(vs []string, f func(string) string) []string {
 }
 
 func RemoveEmptyElements(s []string) []string {
-	var r []string
+	if s == nil {
+		return s
+	}
+
+	var r []string = []string{}
 	for _, str := range s {
 		if strings.TrimSpace(str) != "" {
 			r = append(r, str)

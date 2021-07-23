@@ -78,3 +78,59 @@ func TestSearchPatternInFileLineByLine(t *testing.T) {
 		}
 	}
 }
+
+type sliceFunctionsTest struct {
+	inputSlice          []string
+	functionMap         func(string) string
+	expectedOutputSlice []string
+}
+
+var sliceFunctionMapTests = [...]sliceFunctionsTest{
+	{nil, nil, nil},
+	{nil, strings.TrimSpace, nil},
+	{[]string{}, strings.TrimSpace, []string{}},
+	{[]string{"string"}, nil, []string{"string"}},
+	{
+		[]string{"   initial spaces", "end spaces   ", "   a lot of spaces   ", ""},
+		strings.TrimSpace,
+		[]string{"initial spaces", "end spaces", "a lot of spaces", ""},
+	},
+	{
+		[]string{"lower_string", "lowerstring"},
+		strings.ToUpper,
+		[]string{"LOWER_STRING", "LOWERSTRING"},
+	},
+}
+
+func TestMapStrFunctionInStrSlice(t *testing.T) {
+	for _, test := range sliceFunctionMapTests {
+		slice := utils.MapStrFunctionInStrSlice(test.inputSlice, test.functionMap)
+
+		if diff := deep.Equal(slice, test.expectedOutputSlice); diff != nil {
+			t.Errorf("returned slice not equal to expected")
+			t.Error(diff)
+		}
+	}
+}
+
+var sliceFunctionRemoveEmptyTests = [...]sliceFunctionsTest{
+	{nil, nil, nil},
+	{[]string{}, nil, []string{}},
+	{[]string{"validContent"}, nil, []string{"validContent"}},
+	{
+		[]string{"", "validContent", "   ", " ", ""},
+		nil,
+		[]string{"validContent"},
+	},
+}
+
+func TestRemoveEmptyElements(t *testing.T) {
+	for _, test := range sliceFunctionRemoveEmptyTests {
+		slice := utils.RemoveEmptyElements(test.inputSlice)
+
+		if diff := deep.Equal(slice, test.expectedOutputSlice); diff != nil {
+			t.Errorf("returned slice not equal to expected")
+			t.Error(diff)
+		}
+	}
+}
