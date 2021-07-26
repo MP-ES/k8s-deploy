@@ -19,5 +19,12 @@ func YqSearchQueryInFileWithStringSliceReturn(fileName string, query string) ([]
 	}
 
 	returnedSlice := strings.Split(out.String(), "\n")
-	return utils.RemoveEmptyElements(utils.MapStrFunctionInStrSlice(returnedSlice, strings.TrimSpace)), nil
+	// apply trim
+	returnedSlice = utils.SliceMapStrFunction(returnedSlice, strings.TrimSpace)
+	// remove empty
+	returnedSlice = utils.SliceRemoveEmptyElements(returnedSlice)
+	// remove duplicates
+	returnedSlice = utils.SliceRemoveDuplicateElements(returnedSlice)
+
+	return returnedSlice, nil
 }

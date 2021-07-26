@@ -96,6 +96,11 @@ func (d *DeployEnv) ValidateRules() error {
 				globalErr = multierror.Append(globalErr, err)
 			}
 
+			// validate ingresses
+			if err = ValidateIngressesFromAppDeploy(appDeployPath, kEnv, d.Repository.GitOpsRules); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
 		}
 	}
 	return globalErr.ErrorOrNil()
