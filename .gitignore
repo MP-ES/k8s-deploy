@@ -1,5 +1,5 @@
 # Kubernetes
-kubernetes/
+action_tests/
 .deploy/
 test.yaml
 

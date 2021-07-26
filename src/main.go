@@ -1,10 +1,12 @@
 package main
 
 import (
-	"fmt"
+	"k8s-deploy/entities"
 	"os"
 
+	"github.com/gdexlab/go-render/render"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/sethvargo/go-githubactions"
 	"gopkg.in/op/go-logging.v1"
 )
 
@@ -21,23 +23,19 @@ func setLogging() {
 }
 
 func main() {
-	// var deployenv entities.DeployEnv
-	// var err error
+	var deployenv entities.DeployEnv
+	var err error
 
-	// // set logging
-	// setLogging()
+	// set logging
+	setLogging()
 
-	// if deployenv, err = entities.GetDeployEnvironment(); err != nil {
-	// 	githubactions.Fatalf(err.Error())
-	// }
-	// if err = deployenv.ValidateRules(); err != nil {
-	// 	githubactions.Fatalf(err.Error())
-	// }
-
-	// output := render.Render(deployenv)
-	// githubactions.SetOutput("status", output)
-
-	for _, e := range os.Environ() {
-		fmt.Println(e)
+	if deployenv, err = entities.GetDeployEnvironment(); err != nil {
+		githubactions.Fatalf(err.Error())
 	}
+	if err = deployenv.ValidateRules(); err != nil {
+		githubactions.Fatalf(err.Error())
+	}
+
+	output := render.Render(deployenv)
+	githubactions.SetOutput("status", output)
 }
