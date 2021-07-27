@@ -26,7 +26,6 @@ func (i *Ingress) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 func ValidateIngressesFromAppDeploy(appDeployPath string, kEnv *K8sEnv, repoRules *RepositoryRules) error {
 	var globalErr *multierror.Error
-	var err error
 
 	ingresses, err := infra.YqSearchQueryInFileWithStringSliceReturn(appDeployPath,
 		".spec.rules[].host,.spec.tls[].hosts[]")

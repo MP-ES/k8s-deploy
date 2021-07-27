@@ -28,7 +28,6 @@ func (i *Image) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 func ValidateImagesFromAppDeploy(appDeployPath string, repoRules *RepositoryRules) error {
 	var globalErr *multierror.Error
-	var err error
 
 	imageLines, err := utils.SearchPatternInFileLineByLine(appDeployPath, "^( )*image: .*$")
 	if err != nil {
@@ -37,12 +36,10 @@ func ValidateImagesFromAppDeploy(appDeployPath string, repoRules *RepositoryRule
 		regex := regexp.MustCompile(fmt.Sprintf(`^.*/%s/(?P<image>.*)$`, repoRules.Name))
 		for _, line := range imageLines {
 			image := sanitizeImageLine(line, regex)
-			if image != nil {
-				if !repoRules.IsImageEnabled(*image) {
-					globalErr = multierror.Append(globalErr,
-						fmt.Errorf("image '%s' is not enabled in repository '%s'. Check the GitOps repository",
-							*image, repoRules.Name))
-				}
+			if image != nil && !repoRules.IsImageEnabled(*image) {
+				globalErr = multierror.Append(globalErr,
+					fmt.Errorf("image '%s' is not enabled in repository '%s'. Check the GitOps repository",
+						*image, repoRules.Name))
 			}
 		}
 	}

@@ -26,7 +26,6 @@ func (s *Secret) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 func ValidateSecretsFromAppDeploy(appDeployPath string, repoRules *RepositoryRules) error {
 	var globalErr *multierror.Error
-	var err error
 
 	secrets, err := infra.YqSearchQueryInFileWithStringSliceReturn(appDeployPath,
 		".spec.jobTemplate.spec.template.spec.containers[].env[].name,.spec.template.spec.containers[].env[].name")
