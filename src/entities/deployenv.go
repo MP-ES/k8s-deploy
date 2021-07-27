@@ -30,6 +30,12 @@ type DeployEnv struct {
 	manifestDir      *string
 }
 
+type DeploymentResult struct {
+	K8sEnv string
+	Status bool
+	ErrMsg string
+}
+
 func GetDeployEnvironment() (DeployEnv, error) {
 	deployEnv := DeployEnv{}
 	var globalErr *multierror.Error
@@ -104,6 +110,17 @@ func (d *DeployEnv) ValidateRules() error {
 		}
 	}
 	return globalErr.ErrorOrNil()
+}
+
+func (d *DeployEnv) Apply() []DeploymentResult {
+	result := []DeploymentResult{}
+
+	for _, k := range d.k8sEnvs {
+		result = append(result, DeploymentResult{
+			K8sEnv: k.Name})
+	}
+
+	return result
 }
 
 func getEventReference(repoUrl string) (*eventRef, error) {

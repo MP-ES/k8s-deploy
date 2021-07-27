@@ -1,10 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"k8s-deploy/entities"
 	"os"
 
-	"github.com/gdexlab/go-render/render"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/sethvargo/go-githubactions"
 	"gopkg.in/op/go-logging.v1"
@@ -24,6 +24,7 @@ func setLogging() {
 
 func main() {
 	var deployenv entities.DeployEnv
+	var deploymentResult []byte
 	var err error
 
 	// set logging
@@ -35,7 +36,9 @@ func main() {
 	if err = deployenv.ValidateRules(); err != nil {
 		githubactions.Fatalf(err.Error())
 	}
+	if deploymentResult, err = json.Marshal(deployenv.Apply()); err != nil {
+		githubactions.Fatalf(err.Error())
+	}
 
-	output := render.Render(deployenv)
-	githubactions.SetOutput("status", output)
+	githubactions.SetOutput("status", string(deploymentResult))
 }
