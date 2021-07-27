@@ -5,6 +5,8 @@ import (
 	"k8s-deploy/utils"
 	"regexp"
 	"strings"
+
+	"github.com/hashicorp/go-multierror"
 )
 
 type Image struct {
@@ -25,22 +27,24 @@ func (i *Image) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 func ValidateImagesFromAppDeploy(appDeployPath string, repoRules *RepositoryRules) error {
+	var globalErr *multierror.Error
+
 	imageLines, err := utils.SearchPatternInFileLineByLine(appDeployPath, "^( )*image: .*$")
 	if err != nil {
-		return err
-	}
-
-	regex := regexp.MustCompile(fmt.Sprintf(`^.*/%s/(?P<image>.*)$`, repoRules.Name))
-	for _, line := range imageLines {
-		image := sanitizeImageLine(line, regex)
-		if image != nil {
-			if !repoRules.IsImageEnabled(*image) {
-				return fmt.Errorf("image '%s' is not enabled in repository '%s'. Check the GitOps repository", *image, repoRules.Name)
+		globalErr = multierror.Append(globalErr, err)
+	} else {
+		regex := regexp.MustCompile(fmt.Sprintf(`^.*/%s/(?P<image>.*)$`, repoRules.Name))
+		for _, line := range imageLines {
+			image := sanitizeImageLine(line, regex)
+			if image != nil && !repoRules.IsImageEnabled(*image) {
+				globalErr = multierror.Append(globalErr,
+					fmt.Errorf("image '%s' is not enabled in repository '%s'. Check the GitOps repository",
+						*image, repoRules.Name))
 			}
 		}
 	}
 
-	return nil
+	return globalErr.ErrorOrNil()
 }
 
 func sanitizeImageLine(imageLine string, regex *regexp.Regexp) *string {

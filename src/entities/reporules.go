@@ -26,3 +26,25 @@ func (r *RepositoryRules) IsImageEnabled(imageName string) bool {
 	}
 	return false
 }
+
+func (r *RepositoryRules) IsSecretEnabled(secretName string) bool {
+	for _, s := range r.Secrets {
+		if s.Name == secretName {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *RepositoryRules) IsIngressEnabled(ingress string, kEnv K8sEnv) bool {
+	if _, ok := (*r.Ingresses)[kEnv]; !ok {
+		return false // K8S env not available
+	}
+
+	for _, i := range (*r.Ingresses)[kEnv] {
+		if i.Name == ingress {
+			return true
+		}
+	}
+	return false
+}

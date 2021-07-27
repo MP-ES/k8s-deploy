@@ -91,6 +91,16 @@ func (d *DeployEnv) ValidateRules() error {
 				globalErr = multierror.Append(globalErr, err)
 			}
 
+			// validate secrets
+			if err = ValidateSecretsFromAppDeploy(appDeployPath, d.Repository.GitOpsRules); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
+			// validate ingresses
+			if err = ValidateIngressesFromAppDeploy(appDeployPath, kEnv, d.Repository.GitOpsRules); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
 		}
 	}
 	return globalErr.ErrorOrNil()
@@ -129,7 +139,7 @@ func getManifestDir() (*string, error) {
 		manifestDir = manifestDirDefault
 	}
 
-	manifestFullPath := filepath.Join(os.Getenv("RUNNER_WORKSPACE"), manifestDir)
+	manifestFullPath := filepath.Join(os.Getenv("GITHUB_WORKSPACE"), manifestDir)
 	fileInfo, err := os.Stat(manifestFullPath)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't access '%s' in workspace: %s", manifestDir, err.Error())
