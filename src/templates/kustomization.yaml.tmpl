@@ -5,8 +5,11 @@ namespace: {{ .Namespace }}
 
 commonLabels:
   build: {{ .CommitSHA }}
+
+commonAnnotations:
   githubUrl: {{ .GithubUrl }}
 
 resources:
   - application.yaml
   - namespace.yaml
+  - resourceQuota.yaml

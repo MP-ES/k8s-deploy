@@ -113,11 +113,32 @@ func (d *DeployEnv) ValidateRules() error {
 }
 
 func (d *DeployEnv) Apply() []DeploymentResult {
+	var globalErr *multierror.Error
+	var err error
 	result := []DeploymentResult{}
 
 	for _, k := range d.k8sEnvs {
-		result = append(result, DeploymentResult{
-			K8sEnv: k.Name})
+
+		// generate deployment structure
+		if err = infra.GenerateDeploymentFiles(&d.GitOpsRepository.AvailableK8sEnvs, d.Repository.Name,
+			d.eventRef.Type, d.eventRef.Identifier, d.eventRef.CommitShortSHA, d.eventRef.Url,
+			d.Repository.GitOpsRules.ResourcesQuotas.LimitsCpu, d.Repository.GitOpsRules.ResourcesQuotas.LimitsMemory); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+
+		// save result
+		msg := ""
+		status := globalErr.ErrorOrNil()
+		if status != nil {
+			msg = status.Error()
+		}
+
+		result = append(result,
+			DeploymentResult{
+				K8sEnv: k.Name,
+				Status: status == nil,
+				ErrMsg: msg,
+			})
 	}
 
 	return result

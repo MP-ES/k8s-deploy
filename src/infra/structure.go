@@ -34,17 +34,19 @@ func GenerateInitialDeploymentStructure(kEnvs *map[string]struct{}, eventType st
 }
 
 func GenerateDeploymentFiles(kEnvs *map[string]struct{}, repoName string,
-	eventType string, eventIdentifier string, eventSHA string, eventUrl string) error {
+	eventType string, eventIdentifier string, eventSHA string, eventUrl string, limitCpu string, limitMemory string) error {
 
 	// pull request deploy
 	if eventType == utils.EventTypePullRequest {
-		if err := generateK8sEnvFiles(utils.K8SEnvPullRequest, repoName, eventType, eventIdentifier, eventSHA, eventUrl); err != nil {
+		if err := generateK8sEnvFiles(utils.K8SEnvPullRequest, repoName, eventType,
+			eventIdentifier, eventSHA, eventUrl, limitCpu, limitMemory); err != nil {
 			return err
 		}
 		// other events
 	} else {
 		for kEnv := range *kEnvs {
-			if err := generateK8sEnvFiles(kEnv, repoName, eventType, eventIdentifier, eventSHA, eventUrl); err != nil {
+			if err := generateK8sEnvFiles(kEnv, repoName, eventType,
+				eventIdentifier, eventSHA, eventUrl, limitCpu, limitMemory); err != nil {
 				return err
 			}
 		}
@@ -64,7 +66,7 @@ func recreateDeployDir() error {
 }
 
 func generateK8sEnvFiles(kEnv string, repoName string, eventType string,
-	eventIdentifier string, eventSHA string, eventUrl string) error {
+	eventIdentifier string, eventSHA string, eventUrl string, limitCpu string, limitMemory string) error {
 
 	// kustomization.yaml
 	if err := addTemplate("kustomization.yaml", kEnv, GenerateKustomizationTmplData(repoName, eventType, eventIdentifier, eventSHA, eventUrl)); err != nil {
@@ -72,6 +74,10 @@ func generateK8sEnvFiles(kEnv string, repoName string, eventType string,
 	}
 	// namespace.yaml
 	if err := addTemplate("namespace.yaml", kEnv, GenerateNamespaceTmplData(repoName, eventType, eventIdentifier)); err != nil {
+		return err
+	}
+	// quota.yaml
+	if err := addTemplate("resourceQuota.yaml", kEnv, GenerateResourceQuotaTmplData(repoName, eventType, eventIdentifier, limitCpu, limitMemory)); err != nil {
 		return err
 	}
 

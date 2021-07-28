@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: {{ .Name }}-quota
+spec:
+  hard:
+    limits.cpu: {{ .LimitCpu }}
+    limits.memory: {{ .LimitMemory }}

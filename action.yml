@@ -17,7 +17,7 @@ inputs:
     required: false
 outputs:
   status:
-    description: "Status of deployment"
+    description: "JSON object with the status of deployment by K8S environment"
 runs:
   using: docker
   image: Dockerfile
