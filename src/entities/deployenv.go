@@ -115,14 +115,29 @@ func (d *DeployEnv) ValidateRules() error {
 func (d *DeployEnv) Apply() []DeploymentResult {
 	var globalErr *multierror.Error
 	var err error
+	var imagesReplaces map[string]string
 	result := []DeploymentResult{}
 
 	for _, k := range d.k8sEnvs {
 
-		// generate deployment structure
-		if err = infra.GenerateDeploymentFiles(&d.GitOpsRepository.AvailableK8sEnvs, d.Repository.Name,
-			d.eventRef.Type, d.eventRef.Identifier, d.eventRef.CommitShortSHA, d.eventRef.Url,
-			d.Repository.GitOpsRules.ResourcesQuotas.LimitsCpu, d.Repository.GitOpsRules.ResourcesQuotas.LimitsMemory); err != nil {
+		// generate deployment data
+		appDeployPath := infra.GetYAMLApplicationPath(k.Name, d.eventRef.Type)
+		if imagesReplaces, err = GetImagesTagReplace(appDeployPath, d.Repository.Name, d.eventRef.CommitShortSHA); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+		deploymentData := infra.DeploymentData{
+			RepoName:        d.Repository.Name,
+			EventType:       d.eventRef.Type,
+			EventIdentifier: d.eventRef.Identifier,
+			EventSHA:        d.eventRef.CommitShortSHA,
+			EventUrl:        d.eventRef.Url,
+			LimitCpu:        d.Repository.GitOpsRules.ResourcesQuotas.LimitsCpu,
+			LimitMemory:     d.Repository.GitOpsRules.ResourcesQuotas.LimitsMemory,
+			ImagesReplace:   imagesReplaces,
+		}
+
+		// generate kustomize deployment structure
+		if err = infra.GenerateDeploymentFiles(&d.GitOpsRepository.AvailableK8sEnvs, deploymentData); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
 

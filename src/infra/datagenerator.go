@@ -5,12 +5,13 @@ import (
 	"k8s-deploy/utils"
 )
 
-func GenerateKustomizationTmplData(repoName string, eventType string, eventIdentifier string, eventSHA string, eventUrl string) interface{} {
+func GenerateKustomizationTmplData(repoName string, eventType string, eventIdentifier string, eventSHA string, eventUrl string, imagesReplace map[string]string) interface{} {
 	data := make(map[string]interface{})
 
 	data["Namespace"] = getNamespace(repoName, eventType, eventIdentifier)
 	data["CommitSHA"] = eventSHA
 	data["GithubUrl"] = eventUrl
+	data["ImagesReplace"] = imagesReplace
 
 	return data
 }

@@ -7,6 +7,17 @@ import (
 	"text/template"
 )
 
+type DeploymentData struct {
+	RepoName        string
+	EventType       string
+	EventIdentifier string
+	EventSHA        string
+	EventUrl        string
+	LimitCpu        string
+	LimitMemory     string
+	ImagesReplace   map[string]string
+}
+
 const DeploymentDir string = "../.deploy"
 const templatesDir string = "templates"
 
@@ -33,20 +44,17 @@ func GenerateInitialDeploymentStructure(kEnvs *map[string]struct{}, eventType st
 	return nil
 }
 
-func GenerateDeploymentFiles(kEnvs *map[string]struct{}, repoName string,
-	eventType string, eventIdentifier string, eventSHA string, eventUrl string, limitCpu string, limitMemory string) error {
+func GenerateDeploymentFiles(kEnvs *map[string]struct{}, d DeploymentData) error {
 
 	// pull request deploy
-	if eventType == utils.EventTypePullRequest {
-		if err := generateK8sEnvFiles(utils.K8SEnvPullRequest, repoName, eventType,
-			eventIdentifier, eventSHA, eventUrl, limitCpu, limitMemory); err != nil {
+	if d.EventType == utils.EventTypePullRequest {
+		if err := generateK8sEnvFiles(utils.K8SEnvPullRequest, d); err != nil {
 			return err
 		}
 		// other events
 	} else {
 		for kEnv := range *kEnvs {
-			if err := generateK8sEnvFiles(kEnv, repoName, eventType,
-				eventIdentifier, eventSHA, eventUrl, limitCpu, limitMemory); err != nil {
+			if err := generateK8sEnvFiles(kEnv, d); err != nil {
 				return err
 			}
 		}
@@ -65,19 +73,18 @@ func recreateDeployDir() error {
 	return nil
 }
 
-func generateK8sEnvFiles(kEnv string, repoName string, eventType string,
-	eventIdentifier string, eventSHA string, eventUrl string, limitCpu string, limitMemory string) error {
+func generateK8sEnvFiles(kEnv string, d DeploymentData) error {
 
 	// kustomization.yaml
-	if err := addTemplate("kustomization.yaml", kEnv, GenerateKustomizationTmplData(repoName, eventType, eventIdentifier, eventSHA, eventUrl)); err != nil {
+	if err := addTemplate("kustomization.yaml", kEnv, GenerateKustomizationTmplData(d.RepoName, d.EventType, d.EventIdentifier, d.EventSHA, d.EventUrl, d.ImagesReplace)); err != nil {
 		return err
 	}
 	// namespace.yaml
-	if err := addTemplate("namespace.yaml", kEnv, GenerateNamespaceTmplData(repoName, eventType, eventIdentifier)); err != nil {
+	if err := addTemplate("namespace.yaml", kEnv, GenerateNamespaceTmplData(d.RepoName, d.EventType, d.EventIdentifier)); err != nil {
 		return err
 	}
 	// quota.yaml
-	if err := addTemplate("resourceQuota.yaml", kEnv, GenerateResourceQuotaTmplData(repoName, eventType, eventIdentifier, limitCpu, limitMemory)); err != nil {
+	if err := addTemplate("resourceQuota.yaml", kEnv, GenerateResourceQuotaTmplData(d.RepoName, d.EventType, d.EventIdentifier, d.LimitCpu, d.LimitMemory)); err != nil {
 		return err
 	}
 

@@ -9,6 +9,14 @@ commonLabels:
 commonAnnotations:
   githubUrl: {{ .GithubUrl }}
 
+{{ if .ImagesReplace -}}
+images:
+{{- range $Name, $NewTag := .ImagesReplace }}
+  - name: {{ $Name }}
+    newTag: {{ $NewTag -}}
+{{ end }}
+{{- end }}
+
 resources:
   - application.yaml
   - namespace.yaml
