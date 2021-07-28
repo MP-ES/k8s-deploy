@@ -126,6 +126,11 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 			globalErr = multierror.Append(globalErr, err)
 		}
 
+		// generate final kustomize
+		if err = infra.KustomizeFinalBuild(k.Name, d.eventRef.Type); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+
 		// save result
 		msg := ""
 		status := globalErr.ErrorOrNil()
