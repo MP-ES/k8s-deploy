@@ -5,6 +5,8 @@ FROM golang:1.16
 WORKDIR /src
 COPY ./src .
 
+ENV TEMPLATES_DIR=/src/templates
+
 # Compile the action
 RUN go build -o /bin/action
 

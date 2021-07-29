@@ -1,7 +1,10 @@
 package infra
 
 import (
+	"fmt"
+	"io/ioutil"
 	"k8s-deploy/utils"
+	"log"
 	"os"
 	"path/filepath"
 	"text/template"
@@ -19,7 +22,10 @@ type DeploymentData struct {
 }
 
 const DeploymentDir string = "../.deploy"
-const templatesDir string = "templates"
+
+func getTemplatesDir() string {
+	return os.Getenv("TEMPLATES_DIR")
+}
 
 func GenerateInitialDeploymentStructure(kEnvs *map[string]struct{}, eventType string) error {
 	// main folder
@@ -92,7 +98,15 @@ func generateK8sEnvFiles(kEnv string, d DeploymentData) error {
 }
 
 func addTemplate(templateName string, kEnv string, vars interface{}) error {
-	if err := processTemplate(filepath.Join(templatesDir, templateName+".tmpl"), filepath.Join(DeploymentDir, kEnv, templateName), vars); err != nil {
+	files, err := ioutil.ReadDir(getTemplatesDir())
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, f := range files {
+		fmt.Println(f.Name())
+	}
+	os.Exit(0)
+	if err := processTemplate(filepath.Join(getTemplatesDir(), templateName+".tmpl"), filepath.Join(DeploymentDir, kEnv, templateName), vars); err != nil {
 		return err
 	}
 	return nil
