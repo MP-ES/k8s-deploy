@@ -1,13 +1,12 @@
 package infra
 
 import (
-	"fmt"
-	"io/ioutil"
 	"k8s-deploy/utils"
-	"log"
 	"os"
 	"path/filepath"
 	"text/template"
+
+	"github.com/sethvargo/go-githubactions"
 )
 
 type DeploymentData struct {
@@ -21,10 +20,20 @@ type DeploymentData struct {
 	ImagesReplace   map[string]string
 }
 
-const DeploymentDir string = "../.deploy"
+func GetDeploymentDir() string {
+	if dir := os.Getenv("DEPLOYMENT_DIR"); dir != "" {
+		return dir
+	}
+	githubactions.Fatalf("'DEPLOYMENT_DIR' environment is empty")
+	return ""
+}
 
 func getTemplatesDir() string {
-	return os.Getenv("TEMPLATES_DIR")
+	if dir := os.Getenv("TEMPLATES_DIR"); dir != "" {
+		return dir
+	}
+	githubactions.Fatalf("'TEMPLATES_DIR' environment is empty")
+	return ""
 }
 
 func GenerateInitialDeploymentStructure(kEnvs *map[string]struct{}, eventType string) error {
@@ -35,13 +44,13 @@ func GenerateInitialDeploymentStructure(kEnvs *map[string]struct{}, eventType st
 
 	// pull request deploy
 	if eventType == utils.EventTypePullRequest {
-		if err := os.MkdirAll(filepath.Join(DeploymentDir, utils.K8SEnvPullRequest), os.ModePerm); err != nil {
+		if err := os.MkdirAll(filepath.Join(GetDeploymentDir(), utils.K8SEnvPullRequest), os.ModePerm); err != nil {
 			return err
 		}
 		// other events
 	} else {
 		for kEnv := range *kEnvs {
-			if err := os.MkdirAll(filepath.Join(DeploymentDir, kEnv), os.ModePerm); err != nil {
+			if err := os.MkdirAll(filepath.Join(GetDeploymentDir(), kEnv), os.ModePerm); err != nil {
 				return err
 			}
 		}
@@ -70,10 +79,10 @@ func GenerateDeploymentFiles(kEnvs *map[string]struct{}, d DeploymentData) error
 }
 
 func recreateDeployDir() error {
-	if err := os.RemoveAll(DeploymentDir); err != nil {
+	if err := os.RemoveAll(GetDeploymentDir()); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(DeploymentDir, os.ModePerm); err != nil {
+	if err := os.MkdirAll(GetDeploymentDir(), os.ModePerm); err != nil {
 		return err
 	}
 	return nil
@@ -98,15 +107,7 @@ func generateK8sEnvFiles(kEnv string, d DeploymentData) error {
 }
 
 func addTemplate(templateName string, kEnv string, vars interface{}) error {
-	files, err := ioutil.ReadDir(getTemplatesDir())
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, f := range files {
-		fmt.Println(f.Name())
-	}
-	os.Exit(0)
-	if err := processTemplate(filepath.Join(getTemplatesDir(), templateName+".tmpl"), filepath.Join(DeploymentDir, kEnv, templateName), vars); err != nil {
+	if err := processTemplate(filepath.Join(getTemplatesDir(), templateName+".tmpl"), filepath.Join(GetDeploymentDir(), kEnv, templateName), vars); err != nil {
 		return err
 	}
 	return nil

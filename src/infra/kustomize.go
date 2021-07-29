@@ -77,13 +77,13 @@ func getEnvironmentDir(kEnv string, eventType string) string {
 }
 
 func GetFinalKustomizeApplicationDir(kEnv string, eventType string) string {
-	return filepath.Join(DeploymentDir, getEnvironmentDir(kEnv, eventType))
+	return filepath.Join(GetDeploymentDir(), getEnvironmentDir(kEnv, eventType))
 }
 
 func GetYAMLApplicationPath(kEnv string, eventType string) string {
-	return filepath.Join(DeploymentDir, getEnvironmentDir(kEnv, eventType), "application.yaml")
+	return filepath.Join(GetDeploymentDir(), getEnvironmentDir(kEnv, eventType), "application.yaml")
 }
 
 func GetYAMLFinalKustomizePath(kEnv string, eventType string) string {
-	return filepath.Join(DeploymentDir, getEnvironmentDir(kEnv, eventType), "final.yaml")
+	return filepath.Join(GetDeploymentDir(), getEnvironmentDir(kEnv, eventType), "final.yaml")
 }
