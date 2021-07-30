@@ -14,8 +14,20 @@ images:
 {{- range $Name, $NewTag := .ImagesReplace }}
   - name: {{ $Name }}
     newTag: {{ $NewTag -}}
-{{ end }}
+  {{ end }}
 {{- end }}
+
+patches:
+- target:
+    kind: Ingress
+    name: inova-tls
+  patch: |-
+    - op: "replace"
+      path: "/spec/rules/0/host"
+      value: "new.ingress"
+    - op: "replace"
+      path: "/spec/tls/0/hosts/0"
+      value: "tls.new.ingress"
 
 resources:
   - application.yaml
