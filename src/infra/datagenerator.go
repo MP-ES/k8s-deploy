@@ -5,7 +5,7 @@ import (
 	"k8s-deploy/utils"
 )
 
-func GenerateKustomizationTmplData(repoName string, eventType string, eventIdentifier string, eventSHA string, eventUrl string, imagesReplace map[string]string) interface{} {
+func GenerateKustomizationTmplData(repoName string, eventType string, eventIdentifier string, eventSHA string, eventUrl string, imagesReplace map[string]string, ingressesReplace []*IngressReplacement) interface{} {
 	data := make(map[string]interface{})
 
 	data["Namespace"] = getNamespace(repoName, eventType, eventIdentifier)

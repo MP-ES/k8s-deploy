@@ -9,15 +9,24 @@ import (
 	"github.com/sethvargo/go-githubactions"
 )
 
+type IngressReplacement struct {
+	IngressName  string
+	HostIndex    int
+	HostNewValue string
+	IsTls        bool
+	TlsIndex     int
+}
+
 type DeploymentData struct {
-	RepoName        string
-	EventType       string
-	EventIdentifier string
-	EventSHA        string
-	EventUrl        string
-	LimitCpu        string
-	LimitMemory     string
-	ImagesReplace   map[string]string
+	RepoName         string
+	EventType        string
+	EventIdentifier  string
+	EventSHA         string
+	EventUrl         string
+	LimitCpu         string
+	LimitMemory      string
+	ImagesReplace    map[string]string
+	IngressesReplace []*IngressReplacement
 }
 
 func GetDeploymentDir() string {
@@ -91,7 +100,7 @@ func recreateDeployDir() error {
 func generateK8sEnvFiles(kEnv string, d DeploymentData) error {
 
 	// kustomization.yaml
-	if err := addTemplate("kustomization.yaml", kEnv, GenerateKustomizationTmplData(d.RepoName, d.EventType, d.EventIdentifier, d.EventSHA, d.EventUrl, d.ImagesReplace)); err != nil {
+	if err := addTemplate("kustomization.yaml", kEnv, GenerateKustomizationTmplData(d.RepoName, d.EventType, d.EventIdentifier, d.EventSHA, d.EventUrl, d.ImagesReplace, d.IngressesReplace)); err != nil {
 		return err
 	}
 	// namespace.yaml

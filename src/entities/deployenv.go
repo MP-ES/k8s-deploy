@@ -115,7 +115,9 @@ func (d *DeployEnv) ValidateRules() error {
 func (d *DeployEnv) Apply() []DeploymentResult {
 	var globalErr *multierror.Error
 	var err error
+
 	var imagesReplaces map[string]string
+	var ingressesReplace []*infra.IngressReplacement
 	result := []DeploymentResult{}
 
 	for _, k := range d.k8sEnvs {
@@ -125,15 +127,20 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 		if imagesReplaces, err = GetImagesTagReplace(appDeployPath, d.Repository.Name, d.eventRef.CommitShortSHA); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
+		if ingressesReplace, err = GetIngressesHostReplace(appDeployPath, d.Repository, d.GitOpsRepository, d.eventRef, k); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+
 		deploymentData := infra.DeploymentData{
-			RepoName:        d.Repository.Name,
-			EventType:       d.eventRef.Type,
-			EventIdentifier: d.eventRef.Identifier,
-			EventSHA:        d.eventRef.CommitShortSHA,
-			EventUrl:        d.eventRef.Url,
-			LimitCpu:        d.Repository.GitOpsRules.ResourcesQuotas.LimitsCpu,
-			LimitMemory:     d.Repository.GitOpsRules.ResourcesQuotas.LimitsMemory,
-			ImagesReplace:   imagesReplaces,
+			RepoName:         d.Repository.Name,
+			EventType:        d.eventRef.Type,
+			EventIdentifier:  d.eventRef.Identifier,
+			EventSHA:         d.eventRef.CommitShortSHA,
+			EventUrl:         d.eventRef.Url,
+			LimitCpu:         d.Repository.GitOpsRules.ResourcesQuotas.LimitsCpu,
+			LimitMemory:      d.Repository.GitOpsRules.ResourcesQuotas.LimitsMemory,
+			ImagesReplace:    imagesReplaces,
+			IngressesReplace: ingressesReplace,
 		}
 
 		// generate kustomize deployment structure
