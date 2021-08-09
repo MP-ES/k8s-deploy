@@ -102,8 +102,8 @@ func GetIngressesHostReplace(appDeployPath string, repository *Repository, gitOp
 				if err := json.Unmarshal(scanner.Bytes(), &ingHosts); err != nil {
 					globalErr = multierror.Append(globalErr, err)
 				} else {
-					for iHost, v := range ingHosts.Tls {
-						for iTls, t := range v {
+					for iTls, v := range ingHosts.Tls {
+						for iHost, t := range v {
 							ingressReplacements = append(ingressReplacements, createIngressTlsReplacement(ingHosts.Name, iHost, iTls,
 								generatePrHostValue(t, qtyIngressHosts, repository.Name, eventRef.Identifier, gitOpsRepo.UrlPR)))
 						}

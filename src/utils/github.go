@@ -62,13 +62,6 @@ func GetGithubRepositoryFile(token string, owner string, repo string, path strin
 		return nil, fmt.Errorf("path '%s' is not a file", path)
 	}
 
-	// @ TODO Remove this test hack
-	if path != "schema.yaml" {
-		fmt.Println("trocar conteudo: " + path)
-		base64file := "LS0tCm5hbWU6IGlub3ZhCms4cy1lbnZzOgogIC0gZGV2CiAgLSBhcHAKaW1hZ2VzOgogIC0gaW5vdmEKc2VjcmV0czoKICAtIGlub3ZhX2Rpc3BsYXlfZXJyb3JzCiAgLSBpbm92YV9kaXNwbGF5X3N0YXJ0dXBfZXJyb3JzCiAgLSBpbm92YV9lcnJvcl9yZXBvcnRpbmcKICAtIGlub3ZhX3VybEJhc2UKICAtIGlub3ZhX2Ruc2RiCiAgLSBpbm92YV9sb2dpbmRiCiAgLSBpbm92YV9zZW5oYWRiCiAgLSBpbm92YV9sZGFwX3NlcnZlcgogIC0gaW5vdmFfbGRhcF9iYXNlX2RuCiAgLSBpbm92YV9sZGFwX2RvbWFpbgpyZXNvdXJjZXMtcXVvdGFzOgogIGxpbWl0cy5jcHU6IDIwMG0KICBsaW1pdHMubWVtb3J5OiA1MTJNaQppbmdyZXNzZXM6CiAgYXBwOgogICAgLSBpbm92YS5tcGVzLm1wLmJyCiAgZGV2OgogICAgLSBpbm92YS5kZXYubXBlcy5tcC5icgogICAgLSBpbm92YS5tcGVzLm1wLmJyCiAgICAtIGlub3ZhMi5tcGVzLm1wLmJyCiAgICAtIGlub3ZhMy5kZXYubXBlcy5tcC5icgogICAgLSBpbm92YTQubXBlcy5tcC5icgogICAgLSBpbm92YTQuZGV2Lm1wZXMubXAuYnI="
-		fileContent.Content = &base64file
-	}
-
 	return fileContent, nil
 }
 

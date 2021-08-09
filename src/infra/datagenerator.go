@@ -12,6 +12,7 @@ func GenerateKustomizationTmplData(repoName string, eventType string, eventIdent
 	data["CommitSHA"] = eventSHA
 	data["GithubUrl"] = eventUrl
 	data["ImagesReplace"] = imagesReplace
+	data["IngressesReplace"] = ingressesReplace
 
 	return data
 }

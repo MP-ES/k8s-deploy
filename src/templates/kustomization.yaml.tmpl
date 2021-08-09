@@ -17,17 +17,22 @@ images:
   {{ end }}
 {{- end }}
 
+{{ if .IngressesReplace -}}
 patches:
-- target:
-    kind: Ingress
-    name: inova-tls
-  patch: |-
-    - op: "replace"
-      path: "/spec/rules/0/host"
-      value: "new.ingress"
-    - op: "replace"
-      path: "/spec/tls/0/hosts/0"
-      value: "tls.new.ingress"
+{{- range $Name := .IngressesReplace }}
+  - target:
+      kind: Ingress
+      name: {{ $Name.IngressName }}
+    patch: |-
+      - op: "replace"
+        {{ if $Name.IsTls -}}
+        path: "/spec/tls/{{ $Name.TlsIndex }}/hosts/{{ $Name.HostIndex }}"
+        {{- else -}}
+        path: "/spec/rules/{{ $Name.HostIndex }}/host"
+        {{- end }}
+        value: "{{ $Name.HostNewValue }}"
+  {{ end }}
+{{- end }}
 
 resources:
   - application.yaml
