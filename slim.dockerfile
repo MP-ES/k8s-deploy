@@ -47,5 +47,12 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Copy over the compiled action from the first step
 COPY --from=builder /bin/action /bin/action
 
+# Copy the templates
+COPY --from=builder /src/templates /src/templates
+
+# set envs
+ENV TEMPLATES_DIR=/src/templates
+ENV DEPLOYMENT_DIR=.deploy
+
 # Specify the container's entrypoint as the action
 ENTRYPOINT ["/bin/action"]

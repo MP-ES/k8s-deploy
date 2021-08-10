@@ -48,3 +48,37 @@ func TestYqSearchQueryInFileWithStringSliceReturn(t *testing.T) {
 		}
 	}
 }
+
+type searchInFileJsonTest struct {
+	fileName      string
+	query         string
+	expectedJson  string
+	expectedError string
+}
+
+var searchInFileJsonTests = [...]searchInFileJsonTest{
+	{"fileNotFound.yaml", "", "", "no such file or directory"},
+	{"../../testdata/repository-min.yaml", "wrong-query", "", "Parsing expression: Lexer error:"},
+	{"../../testdata/repository-min.yaml", "",
+		"{\"name\":\"repository-min\",\"k8s-envs\":[\"env1\"],\"images\":[\"docker_image\"],\"resources-quotas\":{\"limits.cpu\":\"100m\",\"limits.memory\":\"100Mi\"}}\n",
+		""},
+	{"../../testdata/repository-min.yaml", ".images[]", "\"docker_image\"\n", ""},
+	{"../../testdata/repository-min.yaml", ".resources-quotas", "{\"limits.cpu\":\"100m\",\"limits.memory\":\"100Mi\"}\n", ""},
+}
+
+func TestYqSearchQueryInFileWithJsonReturn(t *testing.T) {
+	for _, test := range searchInFileJsonTests {
+		bytes, err := infra.YqSearchQueryInFileWithJsonReturn(test.fileName, test.query)
+
+		if err != nil {
+			if test.expectedError == "" || !strings.Contains(err.Error(), test.expectedError) {
+				t.Errorf("Yq search with slice return error '%v' not equal to expected '%s'", err, test.expectedError)
+			}
+		} else {
+			if diff := deep.Equal(bytes.String(), test.expectedJson); diff != nil {
+				t.Errorf("returned JSON not equal to expected")
+				t.Error(diff)
+			}
+		}
+	}
+}

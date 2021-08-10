@@ -9,6 +9,9 @@ import (
 	"github.com/hashicorp/go-multierror"
 )
 
+const regexSearchImageLine = `^( )*image: .*$`
+const regexSearchImageNameInLine = `^.*/%s/(?P<image>.*)$`
+
 type Image struct {
 	Name string
 }
@@ -29,11 +32,11 @@ func (i *Image) UnmarshalYAML(unmarshal func(interface{}) error) error {
 func ValidateImagesFromAppDeploy(appDeployPath string, repoRules *RepositoryRules) error {
 	var globalErr *multierror.Error
 
-	imageLines, err := utils.SearchPatternInFileLineByLine(appDeployPath, "^( )*image: .*$")
+	imageLines, err := utils.SearchPatternInFileLineByLine(appDeployPath, regexSearchImageLine)
 	if err != nil {
 		globalErr = multierror.Append(globalErr, err)
 	} else {
-		regex := regexp.MustCompile(fmt.Sprintf(`^.*/%s/(?P<image>.*)$`, repoRules.Name))
+		regex := regexp.MustCompile(fmt.Sprintf(regexSearchImageNameInLine, repoRules.Name))
 		for _, line := range imageLines {
 			image := sanitizeImageLine(line, regex)
 			if image != nil && !repoRules.IsImageEnabled(*image) {
@@ -47,6 +50,42 @@ func ValidateImagesFromAppDeploy(appDeployPath string, repoRules *RepositoryRule
 	return globalErr.ErrorOrNil()
 }
 
+func GetImagesTagReplace(appDeployPath string, repoName string, eventSHA string) (map[string]string, error) {
+	var globalErr *multierror.Error
+	imagesReplace := map[string]string{}
+
+	imageLines, err := utils.SearchPatternInFileLineByLine(appDeployPath, regexSearchImageLine)
+	if err != nil {
+		globalErr = multierror.Append(globalErr, err)
+	} else {
+		regex := regexp.MustCompile(fmt.Sprintf(regexSearchImageNameInLine, repoName))
+		for _, line := range imageLines {
+			image := getApplicationImage(line, regex)
+			if image != nil {
+				imagesReplace[*image] = eventSHA
+			}
+		}
+	}
+
+	if globalErr == nil {
+		return imagesReplace, nil
+	}
+	return nil, globalErr.ErrorOrNil()
+}
+
+func getApplicationImage(imageLine string, regex *regexp.Regexp) *string {
+	slice := strings.Split(imageLine, ":")
+
+	if len(slice) > 1 {
+		result := regex.FindStringSubmatch(slice[1])
+		if len(result) > 1 {
+			image := strings.TrimSpace(slice[1])
+			return &image
+		}
+	}
+	return nil
+}
+
 func sanitizeImageLine(imageLine string, regex *regexp.Regexp) *string {
 	slice := strings.Split(imageLine, ":")
 
@@ -56,6 +95,5 @@ func sanitizeImageLine(imageLine string, regex *regexp.Regexp) *string {
 			return &result[1]
 		}
 	}
-
 	return nil
 }

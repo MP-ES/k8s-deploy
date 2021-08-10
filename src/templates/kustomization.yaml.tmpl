@@ -5,8 +5,36 @@ namespace: {{ .Namespace }}
 
 commonLabels:
   build: {{ .CommitSHA }}
+
+commonAnnotations:
   githubUrl: {{ .GithubUrl }}
+
+{{ if .ImagesReplace -}}
+images:
+{{- range $Name, $NewTag := .ImagesReplace }}
+  - name: {{ $Name }}
+    newTag: {{ $NewTag -}}
+  {{ end }}
+{{- end }}
+
+{{ if .IngressesReplace -}}
+patches:
+{{- range $Name := .IngressesReplace }}
+  - target:
+      kind: Ingress
+      name: {{ $Name.IngressName }}
+    patch: |-
+      - op: "replace"
+        {{ if $Name.IsTls -}}
+        path: "/spec/tls/{{ $Name.TlsIndex }}/hosts/{{ $Name.HostIndex }}"
+        {{- else -}}
+        path: "/spec/rules/{{ $Name.HostIndex }}/host"
+        {{- end }}
+        value: "{{ $Name.HostNewValue }}"
+  {{ end }}
+{{- end }}
 
 resources:
   - application.yaml
   - namespace.yaml
+  - resourceQuota.yaml

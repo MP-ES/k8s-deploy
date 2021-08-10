@@ -58,7 +58,7 @@ var searchPatternInFileLineByLineTests = [...]searchPatternInFileLineByLineTest{
 	{"../../testdata/repository-all.yaml", "patternNotFound", []string{}, "error parsing regexp"},
 	{"../../testdata/repository-all.yaml", "name", []string{"name: repository-all"}, "error parsing regexp"},
 	{"../../testdata/repository-all.yaml", "image",
-		[]string{"images:", "  - docker_image_one", "  - docker_image_two"},
+		[]string{"images:", "- docker_image_one", "- docker_image_two"},
 		"error parsing regexp"},
 }
 

@@ -17,6 +17,7 @@ type GitOpsRepository struct {
 	accessToken          string
 	AvailableK8sEnvs     map[string]struct{}
 	AvailableK8sEnvsToPR map[string]struct{}
+	UrlPR                string
 	PathSchemas          string
 }
 
@@ -45,12 +46,15 @@ func GetGitOpsRepository() (*GitOpsRepository, error) {
 	gitOpsRepo.accessToken = token
 	gitOpsRepo.PathSchemas = deploysDirStr
 
-	// get schema and set envs available
+	// get schema and set additional data
 	fileContent, err := utils.GetGithubRepositoryFile(gitOpsRepo.accessToken, gitOpsRepo.Owner, gitOpsRepo.Repository, gitOpsSchemaFile)
 	if err != nil {
 		return nil, err
 	}
 	if err := gitOpsRepo.setAvailableK8sEnvs(fileContent.Content); err != nil {
+		return nil, err
+	}
+	if err := gitOpsRepo.setUrlPR(fileContent.Content); err != nil {
 		return nil, err
 	}
 
@@ -81,6 +85,37 @@ func (g *GitOpsRepository) setAvailableK8sEnvs(base64Schema *string) error {
 	}
 	for _, env := range extractedEnvsToPR {
 		g.AvailableK8sEnvsToPR[regClean.ReplaceAllString(env, "${1}")] = struct{}{}
+	}
+
+	return nil
+}
+
+func (g *GitOpsRepository) setUrlPR(base64Schema *string) error {
+	type urlPRYaml struct {
+		UrlPREnum string `yaml:"url-pr"`
+	}
+	urlPREnum := urlPRYaml{}
+	if err := utils.UnmarshalSingleYamlKeyFromMultifile(base64Schema, &urlPREnum); err != nil {
+		return err
+	}
+
+	// extract data
+	extractedUrls := strings.Split(urlPREnum.UrlPREnum, ",")
+	urlsRead := []string{}
+	regClean := regexp.MustCompile(`.*"([^"]*)".*`)
+
+	for _, url := range extractedUrls {
+		urlsRead = append(urlsRead, regClean.ReplaceAllString(url, "${1}"))
+	}
+
+	// check result
+	if len(urlsRead) != 1 {
+		return errors.New("must be defined the URL to PR")
+	}
+
+	g.UrlPR = urlsRead[0]
+	if !strings.HasPrefix(g.UrlPR, ".") {
+		g.UrlPR = fmt.Sprintf(".%s", g.UrlPR)
 	}
 
 	return nil

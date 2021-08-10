@@ -1,7 +1,6 @@
 # Kubernetes
 action_tests/
 .deploy/
-test.yaml
 
 # Binaries for programs and plugins
 *.exe

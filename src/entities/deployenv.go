@@ -30,6 +30,12 @@ type DeployEnv struct {
 	manifestDir      *string
 }
 
+type DeploymentResult struct {
+	K8sEnv   string
+	Deployed bool
+	ErrMsg   string
+}
+
 func GetDeployEnvironment() (DeployEnv, error) {
 	deployEnv := DeployEnv{}
 	var globalErr *multierror.Error
@@ -104,6 +110,65 @@ func (d *DeployEnv) ValidateRules() error {
 		}
 	}
 	return globalErr.ErrorOrNil()
+}
+
+func (d *DeployEnv) Apply() []DeploymentResult {
+	var globalErr *multierror.Error
+	var err error
+
+	var imagesReplaces map[string]string
+	var ingressesReplace []*infra.IngressReplacement
+	result := []DeploymentResult{}
+
+	for _, k := range d.k8sEnvs {
+
+		// generate deployment data
+		appDeployPath := infra.GetYAMLApplicationPath(k.Name, d.eventRef.Type)
+		if imagesReplaces, err = GetImagesTagReplace(appDeployPath, d.Repository.Name, d.eventRef.CommitShortSHA); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+		if ingressesReplace, err = GetIngressesHostReplace(appDeployPath, d.Repository, d.GitOpsRepository, d.eventRef, k); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+
+		deploymentData := infra.DeploymentData{
+			RepoName:         d.Repository.Name,
+			EventType:        d.eventRef.Type,
+			EventIdentifier:  d.eventRef.Identifier,
+			EventSHA:         d.eventRef.CommitShortSHA,
+			EventUrl:         d.eventRef.Url,
+			LimitCpu:         d.Repository.GitOpsRules.ResourcesQuotas.LimitsCpu,
+			LimitMemory:      d.Repository.GitOpsRules.ResourcesQuotas.LimitsMemory,
+			ImagesReplace:    imagesReplaces,
+			IngressesReplace: ingressesReplace,
+		}
+
+		// generate kustomize deployment structure
+		if err = infra.GenerateDeploymentFiles(&d.GitOpsRepository.AvailableK8sEnvs, deploymentData); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+
+		// generate final kustomize
+		if err = infra.KustomizeFinalBuild(k.Name, d.eventRef.Type); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+
+		// save result
+		msg := ""
+		status := globalErr.ErrorOrNil()
+		if status != nil {
+			msg = status.Error()
+		}
+
+		result = append(result,
+			DeploymentResult{
+				K8sEnv:   k.Name,
+				Deployed: status == nil,
+				ErrMsg:   msg,
+			})
+	}
+
+	return result
 }
 
 func getEventReference(repoUrl string) (*eventRef, error) {

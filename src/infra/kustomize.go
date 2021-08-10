@@ -11,26 +11,47 @@ import (
 	"sigs.k8s.io/kustomize/api/resmap"
 )
 
-func KustomizeApplicationBuild(manifestDir string, kEnv string, eventType string) error {
+func runKustomize(buildDir string, destinationFile string) error {
 	var res resmap.ResMap
 	var yaml []byte
 	var err error
 
 	kustomizer := krusty.MakeKustomizer(krusty.MakeDefaultOptions())
 	fSys := filesys.MakeFsOnDisk()
-	applicationBuildDir := getApplicationBuildDir(manifestDir, kEnv)
 
 	// build kustomize
-	if res, err = kustomizer.Run(fSys, applicationBuildDir); err != nil {
-		return fmt.Errorf("error on build kustomize of the application: %s", err.Error())
+	if res, err = kustomizer.Run(fSys, buildDir); err != nil {
+		return fmt.Errorf("error on build kustomize: %s", err.Error())
 	}
 
 	// save result
 	if yaml, err = res.AsYaml(); err != nil {
-		return fmt.Errorf("error on generate YAML kustomize of the application: %s", err.Error())
+		return fmt.Errorf("error on generate YAML kustomize: %s", err.Error())
 	}
-	if err = fSys.WriteFile(GetYAMLApplicationPath(kEnv, eventType), yaml); err != nil {
-		return fmt.Errorf("error on save YAML kustomize of the application: %s", err.Error())
+	if err = fSys.WriteFile(destinationFile, yaml); err != nil {
+		return fmt.Errorf("error on save YAML kustomize: %s", err.Error())
+	}
+
+	return nil
+}
+
+func KustomizeApplicationBuild(manifestDir string, kEnv string, eventType string) error {
+	buildDir := getApplicationBuildDir(manifestDir, kEnv)
+	destinationFile := GetYAMLApplicationPath(kEnv, eventType)
+
+	if err := runKustomize(buildDir, destinationFile); err != nil {
+		return fmt.Errorf("error on run application kustomize: %s", err.Error())
+	}
+
+	return nil
+}
+
+func KustomizeFinalBuild(kEnv string, eventType string) error {
+	buildDir := GetFinalKustomizeApplicationDir(kEnv, eventType)
+	destinationFile := GetYAMLFinalKustomizePath(kEnv, eventType)
+
+	if err := runKustomize(buildDir, destinationFile); err != nil {
+		return fmt.Errorf("error on run final kustomize: %s", err.Error())
 	}
 
 	return nil
@@ -45,12 +66,24 @@ func getApplicationBuildDir(manifestDir string, kEnv string) string {
 	return dir
 }
 
-func GetYAMLApplicationPath(kEnv string, eventType string) string {
+func getEnvironmentDir(kEnv string, eventType string) string {
 	var dir string
 	if eventType == utils.EventTypePullRequest {
 		dir = utils.K8SEnvPullRequest
 	} else {
 		dir = kEnv
 	}
-	return filepath.Join(DeploymentDir, dir, "application.yaml")
+	return dir
+}
+
+func GetFinalKustomizeApplicationDir(kEnv string, eventType string) string {
+	return filepath.Join(GetDeploymentDir(), getEnvironmentDir(kEnv, eventType))
+}
+
+func GetYAMLApplicationPath(kEnv string, eventType string) string {
+	return filepath.Join(GetDeploymentDir(), getEnvironmentDir(kEnv, eventType), "application.yaml")
+}
+
+func GetYAMLFinalKustomizePath(kEnv string, eventType string) string {
+	return filepath.Join(GetDeploymentDir(), getEnvironmentDir(kEnv, eventType), "final.yaml")
 }

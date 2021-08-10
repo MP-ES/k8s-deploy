@@ -34,7 +34,24 @@ Following outputs are available:
 
 | Name          | Type    | Description                           |
 |---------------|---------|---------------------------------------|
-| `status`      | Boolean | Status of deployment                  |
+| `status`      | JSON object    | Array of deployment status by K8S environment |
+
+Output example:
+
+```json
+[
+   {
+      "K8sEnv":"dev",
+      "Deployed":true,
+      "ErrMsg":""
+   },
+   {
+      "K8sEnv":"app",
+      "Deployed":false,
+      "ErrMsg":"Server unavailable"
+   }
+]
+```
 
 ## Developer
 

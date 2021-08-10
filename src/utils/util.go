@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
@@ -49,12 +50,13 @@ func SearchPatternInFileLineByLine(fileName string, pattern string) ([]string, e
 	for fileScanner.Scan() {
 		line := fileScanner.Text()
 		if regex.MatchString(line) {
-			matchList = append(matchList, line)
+			matchList = append(matchList, strings.TrimSpace(line))
 		}
 	}
 
 	if err := fileScanner.Err(); err != nil {
 		return nil, err
 	}
-	return matchList, nil
+
+	return SliceRemoveDuplicateElements(matchList), nil
 }
