@@ -42,12 +42,12 @@ Output example:
 [
    {
       "K8sEnv":"dev",
-      "Status":true,
+      "Deployed":true,
       "ErrMsg":""
    },
    {
       "K8sEnv":"app",
-      "Status":false,
+      "Deployed":false,
       "ErrMsg":"Server unavailable"
    }
 ]

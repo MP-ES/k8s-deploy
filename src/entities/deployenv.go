@@ -31,9 +31,9 @@ type DeployEnv struct {
 }
 
 type DeploymentResult struct {
-	K8sEnv string
-	Status bool
-	ErrMsg string
+	K8sEnv   string
+	Deployed bool
+	ErrMsg   string
 }
 
 func GetDeployEnvironment() (DeployEnv, error) {
@@ -162,9 +162,9 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 
 		result = append(result,
 			DeploymentResult{
-				K8sEnv: k.Name,
-				Status: status == nil,
-				ErrMsg: msg,
+				K8sEnv:   k.Name,
+				Deployed: status == nil,
+				ErrMsg:   msg,
 			})
 	}
 
