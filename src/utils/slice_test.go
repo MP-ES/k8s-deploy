@@ -47,7 +47,7 @@ var sliceFunctionRemoveEmptyTests = [...]sliceFunctionsTest{
 	{[]string{}, nil, []string{}},
 	{[]string{"validContent"}, nil, []string{"validContent"}},
 	{
-		[]string{"", "validContent", "   ", " ", ""},
+		[]string{"", "validContent", "   ", " ", "", "null"},
 		nil,
 		[]string{"validContent"},
 	},

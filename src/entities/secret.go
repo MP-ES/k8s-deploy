@@ -28,7 +28,7 @@ func ValidateSecretsFromAppDeploy(appDeployPath string, repoRules *RepositoryRul
 	var globalErr *multierror.Error
 
 	secrets, err := infra.YqSearchQueryInFileWithStringSliceReturn(appDeployPath,
-		".spec.jobTemplate.spec.template.spec.containers[].env[].name,.spec.template.spec.containers[].env[].name")
+		".spec.jobTemplate.spec.template.spec.containers[].env[].valueFrom.secretKeyRef.key,.spec.template.spec.containers[].env[].valueFrom.secretKeyRef.key")
 	if err != nil {
 		globalErr = multierror.Append(globalErr, err)
 	} else {
