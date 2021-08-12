@@ -46,6 +46,13 @@ func getTemplatesDir() string {
 	return ""
 }
 
+func ClearDeploy() {
+	err := os.RemoveAll(GetDeploymentDir())
+	if err != nil {
+		githubactions.Fatalf("error when clean the deployment directory. The container can have sensitive data!")
+	}
+}
+
 func GenerateInitialDeploymentStructure(kEnvs *map[string]struct{}, eventType string) error {
 	// main folder
 	if err := recreateDeployDir(); err != nil {
