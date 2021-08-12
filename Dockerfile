@@ -3,7 +3,7 @@ FROM golang:1.16
 
 # set envs
 ENV TEMPLATES_DIR=/src/templates
-ENV DEPLOYMENT_DIR=.deploy
+ENV DEPLOYMENT_DIR=/tmp/k8s-deploy
 
 # Copy src files from the host into the container
 WORKDIR /src
