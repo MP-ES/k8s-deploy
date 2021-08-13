@@ -160,10 +160,17 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 			globalErr = multierror.Append(globalErr, err)
 		}
 
-		// get deployed ingresses
+		// kubectl apply only if do not have previous errors
 		var deployedIngresses []string
-		if deployedIngresses, err = GetDeployedIngresses(finalDeployedPath, d.Repository, k); err != nil {
-			globalErr = multierror.Append(globalErr, err)
+		if globalErr == nil {
+			if err = infra.KubectlApply(finalDeployedPath); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
+			// get deployed ingresses
+			if deployedIngresses, err = GetDeployedIngresses(finalDeployedPath, d.Repository, k); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
 		}
 
 		// save result

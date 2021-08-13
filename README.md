@@ -45,7 +45,7 @@ Output example:
       "Deployed":true,
       "ErrMsg":"",
       "Ingresses":[
-         "inova-pr6.dev.mpes.mp.br"
+         "ingress.env.domain.com"
       ]
    },
    {
