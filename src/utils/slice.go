@@ -23,7 +23,7 @@ func SliceRemoveEmptyElements(s []string) []string {
 
 	var r []string = []string{}
 	for _, str := range s {
-		if strings.TrimSpace(str) != "" {
+		if strings.TrimSpace(str) != "" && str != "null" {
 			r = append(r, str)
 		}
 	}

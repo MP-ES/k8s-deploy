@@ -39,6 +39,10 @@ RUN upx -q -9 /bin/action
 # runtime, files, shell, libraries, etc.
 FROM scratch
 
+# set envs
+ENV TEMPLATES_DIR=/src/templates
+ENV DEPLOYMENT_DIR=/tmp/k8s-deploy
+
 # Copy over SSL certificates from the first step - this is required
 # if our code makes any outbound SSL connections because it contains
 # the root CA bundle.
@@ -49,10 +53,6 @@ COPY --from=builder /bin/action /bin/action
 
 # Copy the templates
 COPY --from=builder /src/templates /src/templates
-
-# set envs
-ENV TEMPLATES_DIR=/src/templates
-ENV DEPLOYMENT_DIR=.deploy
 
 # Specify the container's entrypoint as the action
 ENTRYPOINT ["/bin/action"]

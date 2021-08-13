@@ -5,14 +5,18 @@ import (
 	"k8s-deploy/utils"
 )
 
-func GenerateKustomizationTmplData(repoName string, eventType string, eventIdentifier string, eventSHA string, eventUrl string, imagesReplace map[string]string, ingressesReplace []*IngressReplacement) interface{} {
+func GenerateKustomizationTmplData(repoName string, eventType string, eventIdentifier string,
+	eventSHA string, eventUrl string, secrets map[string]string,
+	imagesReplace map[string]string, ingressesReplace []*IngressReplacement) interface{} {
 	data := make(map[string]interface{})
 
+	data["RepoName"] = repoName
 	data["Namespace"] = getNamespace(repoName, eventType, eventIdentifier)
 	data["CommitSHA"] = eventSHA
 	data["GithubUrl"] = eventUrl
 	data["ImagesReplace"] = imagesReplace
 	data["IngressesReplace"] = ingressesReplace
+	data["Secrets"] = secrets
 
 	return data
 }
@@ -31,6 +35,13 @@ func GenerateResourceQuotaTmplData(repoName string, eventType string, eventIdent
 	data["Name"] = getNamespace(repoName, eventType, eventIdentifier)
 	data["LimitCpu"] = cpuLimit
 	data["LimitMemory"] = memoryLimit
+	return data
+}
+
+func GenerateEnvTmplData(secrets map[string]string) interface{} {
+	data := make(map[string]interface{})
+
+	data["Secrets"] = secrets
 	return data
 }
 

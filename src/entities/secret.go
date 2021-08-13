@@ -3,6 +3,7 @@ package entities
 import (
 	"fmt"
 	"k8s-deploy/infra"
+	"os"
 
 	"github.com/hashicorp/go-multierror"
 )
@@ -27,8 +28,24 @@ func (s *Secret) UnmarshalYAML(unmarshal func(interface{}) error) error {
 func ValidateSecretsFromAppDeploy(appDeployPath string, repoRules *RepositoryRules) error {
 	var globalErr *multierror.Error
 
+	// checking secrets name: must be the repository name
+	secretsName, err := infra.YqSearchQueryInFileWithStringSliceReturn(appDeployPath,
+		".spec.jobTemplate.spec.template.spec.containers[].env[].valueFrom.secretKeyRef.name,.spec.template.spec.containers[].env[].valueFrom.secretKeyRef.name")
+	if err != nil {
+		globalErr = multierror.Append(globalErr, err)
+	}
+	if len(secretsName) > 1 {
+		globalErr = multierror.Append(globalErr,
+			fmt.Errorf("more than one k8s secret by repository is not allowed. current k8s-secrets: %v", secretsName))
+	}
+	if len(secretsName) > 0 && secretsName[0] != repoRules.Name {
+		globalErr = multierror.Append(globalErr,
+			fmt.Errorf("the k8s-secret name must be the same as the repository name. Current name: %s; expected: %s", secretsName[0], repoRules.Name))
+	}
+
+	// checking if all secrets was declared and was setted as env
 	secrets, err := infra.YqSearchQueryInFileWithStringSliceReturn(appDeployPath,
-		".spec.jobTemplate.spec.template.spec.containers[].env[].name,.spec.template.spec.containers[].env[].name")
+		".spec.jobTemplate.spec.template.spec.containers[].env[].valueFrom.secretKeyRef.key,.spec.template.spec.containers[].env[].valueFrom.secretKeyRef.key")
 	if err != nil {
 		globalErr = multierror.Append(globalErr, err)
 	} else {
@@ -38,8 +55,35 @@ func ValidateSecretsFromAppDeploy(appDeployPath string, repoRules *RepositoryRul
 					fmt.Errorf("secret '%s' is not enabled in repository '%s'. Check the GitOps repository",
 						secret, repoRules.Name))
 			}
+
+			if _, ok := os.LookupEnv(secret); !ok {
+				globalErr = multierror.Append(globalErr,
+					fmt.Errorf("secret '%s' is not setted as environment variable",
+						secret))
+			}
 		}
 	}
 
 	return globalErr.ErrorOrNil()
+}
+
+func GetSecretsDeploy(appDeployPath string) (map[string]string, error) {
+	var globalErr *multierror.Error
+	secretsList := map[string]string{}
+
+	secrets, err := infra.YqSearchQueryInFileWithStringSliceReturn(appDeployPath,
+		".spec.jobTemplate.spec.template.spec.containers[].env[].valueFrom.secretKeyRef.key,.spec.template.spec.containers[].env[].valueFrom.secretKeyRef.key")
+	if err != nil {
+		globalErr = multierror.Append(globalErr, err)
+	} else {
+		for _, secret := range secrets {
+			secretsList[secret] = os.Getenv(secret)
+		}
+	}
+
+	if globalErr == nil {
+		return secretsList, nil
+	}
+
+	return nil, globalErr.ErrorOrNil()
 }

@@ -25,6 +25,7 @@ type DeploymentData struct {
 	EventUrl         string
 	LimitCpu         string
 	LimitMemory      string
+	Secrets          map[string]string
 	ImagesReplace    map[string]string
 	IngressesReplace []*IngressReplacement
 }
@@ -43,6 +44,13 @@ func getTemplatesDir() string {
 	}
 	githubactions.Fatalf("'TEMPLATES_DIR' environment is empty")
 	return ""
+}
+
+func ClearDeploy() {
+	err := os.RemoveAll(GetDeploymentDir())
+	if err != nil {
+		githubactions.Fatalf("error when clean the deployment directory. The container can have sensitive data!")
+	}
 }
 
 func GenerateInitialDeploymentStructure(kEnvs *map[string]struct{}, eventType string) error {
@@ -100,15 +108,23 @@ func recreateDeployDir() error {
 func generateK8sEnvFiles(kEnv string, d DeploymentData) error {
 
 	// kustomization.yaml
-	if err := addTemplate("kustomization.yaml", kEnv, GenerateKustomizationTmplData(d.RepoName, d.EventType, d.EventIdentifier, d.EventSHA, d.EventUrl, d.ImagesReplace, d.IngressesReplace)); err != nil {
+	if err := addTemplate("kustomization.yaml", kEnv,
+		GenerateKustomizationTmplData(d.RepoName, d.EventType, d.EventIdentifier, d.EventSHA, d.EventUrl, d.Secrets, d.ImagesReplace, d.IngressesReplace)); err != nil {
 		return err
 	}
 	// namespace.yaml
-	if err := addTemplate("namespace.yaml", kEnv, GenerateNamespaceTmplData(d.RepoName, d.EventType, d.EventIdentifier)); err != nil {
+	if err := addTemplate("namespace.yaml", kEnv,
+		GenerateNamespaceTmplData(d.RepoName, d.EventType, d.EventIdentifier)); err != nil {
 		return err
 	}
 	// quota.yaml
-	if err := addTemplate("resourceQuota.yaml", kEnv, GenerateResourceQuotaTmplData(d.RepoName, d.EventType, d.EventIdentifier, d.LimitCpu, d.LimitMemory)); err != nil {
+	if err := addTemplate("resourceQuota.yaml", kEnv,
+		GenerateResourceQuotaTmplData(d.RepoName, d.EventType, d.EventIdentifier, d.LimitCpu, d.LimitMemory)); err != nil {
+		return err
+	}
+	// .env
+	if err := addTemplate(".env", kEnv,
+		GenerateEnvTmplData(d.Secrets)); err != nil {
 		return err
 	}
 
