@@ -31,9 +31,10 @@ type DeployEnv struct {
 }
 
 type DeploymentResult struct {
-	K8sEnv   string
-	Deployed bool
-	ErrMsg   string
+	K8sEnv    string
+	Deployed  bool
+	ErrMsg    string
+	Ingresses []string
 }
 
 func GetDeployEnvironment() (DeployEnv, error) {
@@ -125,6 +126,7 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 
 		// generate deployment data
 		appDeployPath := infra.GetYAMLApplicationPath(k.Name, d.eventRef.Type)
+		finalDeployedPath := infra.GetYAMLFinalKustomizePath(k.Name, d.eventRef.Type)
 		if secrets, err = GetSecretsDeploy(appDeployPath); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
@@ -158,18 +160,25 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 			globalErr = multierror.Append(globalErr, err)
 		}
 
+		// get deployed ingresses
+		var deployedIngresses []string
+		if deployedIngresses, err = GetDeployedIngresses(finalDeployedPath, d.Repository, k); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+
 		// save result
-		msg := ""
-		status := globalErr.ErrorOrNil()
-		if status != nil {
-			msg = status.Error()
+		msgErr := ""
+		deployErr := globalErr.ErrorOrNil()
+		if deployErr != nil {
+			msgErr = deployErr.Error()
 		}
 
 		result = append(result,
 			DeploymentResult{
-				K8sEnv:   k.Name,
-				Deployed: status == nil,
-				ErrMsg:   msg,
+				K8sEnv:    k.Name,
+				Deployed:  deployErr == nil,
+				ErrMsg:    msgErr,
+				Ingresses: deployedIngresses,
 			})
 	}
 

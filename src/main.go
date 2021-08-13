@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"k8s-deploy/entities"
-	"k8s-deploy/infra"
 	"os"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -29,7 +28,7 @@ func main() {
 	var err error
 
 	// destroy the deployment directory to avoid keep sensitive data
-	defer infra.ClearDeploy()
+	// defer infra.ClearDeploy()
 
 	// set logging
 	setLogging()

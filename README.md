@@ -32,9 +32,9 @@ The owner must have a repository named **gitops** with the rules of application 
 
 Following outputs are available:
 
-| Name          | Type    | Description                           |
-|---------------|---------|---------------------------------------|
-| `status`      | JSON object    | Array of deployment status by K8S environment |
+| Name     | Type        | Description                                   |
+| -------- | ----------- | --------------------------------------------- |
+| `status` | JSON object | Array of deployment status by K8S environment |
 
 Output example:
 
@@ -43,12 +43,16 @@ Output example:
    {
       "K8sEnv":"dev",
       "Deployed":true,
-      "ErrMsg":""
+      "ErrMsg":"",
+      "Ingresses":[
+         "inova-pr6.dev.mpes.mp.br"
+      ]
    },
    {
       "K8sEnv":"app",
       "Deployed":false,
-      "ErrMsg":"Server unavailable"
+      "ErrMsg":"Server unavailable",
+      "Ingresses":[]
    }
 ]
 ```
