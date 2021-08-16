@@ -26,6 +26,11 @@ The owner must have a repository named **gitops** with the rules of application 
 
     # GitHub PAT with read permission on gitOps repository, if gitOps is private
     gitops-token: ${{ secrets.SECRET_NAME }}
+
+  env:
+    # list of app secrets, defined in gitOps repository
+    app_secret1: ${{ secrets.app_secret1 }}
+    app_secret2: ${{ secrets.app_secret2 }}
 ```
 
 ## Outputs

@@ -20,4 +20,5 @@ require (
 	gopkg.in/op/go-logging.v1 v1.0.0-20160211212156-b2cb9fa56473
 	gopkg.in/yaml.v2 v2.4.0
 	sigs.k8s.io/kustomize/api v0.8.11
+	sigs.k8s.io/kustomize/kyaml v0.11.0
 )
