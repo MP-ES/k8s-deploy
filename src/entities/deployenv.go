@@ -34,6 +34,7 @@ type DeploymentResult struct {
 	K8sEnv    string
 	Deployed  bool
 	ErrMsg    string
+	ApplyLog  string
 	Ingresses []string
 }
 
@@ -162,8 +163,9 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 
 		// kubectl apply only if do not have previous errors
 		var deployedIngresses []string
+		var applyLog string
 		if globalErr == nil {
-			if err = infra.KubectlApply(finalDeployedPath); err != nil {
+			if applyLog, err = infra.KubectlApply(finalDeployedPath); err != nil {
 				globalErr = multierror.Append(globalErr, err)
 			}
 
@@ -186,6 +188,7 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 				Deployed:  deployErr == nil,
 				ErrMsg:    msgErr,
 				Ingresses: deployedIngresses,
+				ApplyLog:  applyLog,
 			})
 	}
 

@@ -49,6 +49,7 @@ Output example:
       "K8sEnv":"dev",
       "Deployed":true,
       "ErrMsg":"",
+      "ApplyLog":"deployment.apps/test created\nservice/test created\ningress.extensions/test created\nnamespace/test unchanged\nresourcequota/test unchanged\nsecret/test unchanged\n",
       "Ingresses":[
          "ingress.env.domain.com"
       ]
@@ -56,7 +57,8 @@ Output example:
    {
       "K8sEnv":"app",
       "Deployed":false,
-      "ErrMsg":"Server unavailable",
+      "ErrMsg":"1 error occurred:\n\t* exit status 1\n\n",
+      "ApplyLog":"resourcequota/test created\nsecret/test created\nError from server (NotFound): error when creating \"../.deploy/pr/final.yaml\": namespaces \"test\" not found\n",
       "Ingresses":[]
    }
 ]
