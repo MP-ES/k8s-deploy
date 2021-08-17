@@ -1,6 +1,6 @@
 module k8s-deploy
 
-go 1.15
+go 1.16
 
 require (
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
