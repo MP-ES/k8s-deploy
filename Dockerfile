@@ -5,6 +5,10 @@ FROM golang:1.16
 ENV TEMPLATES_DIR=/src/templates
 ENV DEPLOYMENT_DIR=/tmp/k8s-deploy
 
+# Install kubectl
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+  install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
 # Copy src files from the host into the container
 WORKDIR /src
 COPY ./src .
