@@ -33,10 +33,10 @@ var repositoryTests = [...]repositoryTest{
 					{Name: "database_password"}},
 				ResourcesQuotas: &entities.ResourcesQuotas{
 					LimitsCpu: "100m", LimitsMemory: "100Mi"},
-				Ingresses: &map[entities.K8sEnv][]*entities.Ingress{
-					{Name: "env1"}: {&entities.Ingress{Name: "application.env1.domain.com"}},
-					{Name: "env2"}: {&entities.Ingress{Name: "application.env2.domain.com"}},
-					{Name: "env3"}: {&entities.Ingress{Name: "application.env3.domain.com"},
+				Ingresses: &map[string][]*entities.Ingress{
+					"env1": {&entities.Ingress{Name: "application.env1.domain.com"}},
+					"env2": {&entities.Ingress{Name: "application.env2.domain.com"}},
+					"env3": {&entities.Ingress{Name: "application.env3.domain.com"},
 						&entities.Ingress{Name: "application.domain.com"}}},
 			},
 		},

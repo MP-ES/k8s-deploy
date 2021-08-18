@@ -62,7 +62,7 @@ contexts:
     name: env1
 ```
 
-You can generate a base64 of the file with `base64 kubeconfig_file.yaml`.
+You can generate a base64 of the file with `base64 -w 0 kubeconfig_file.yaml`.
 
 ## Outputs
 

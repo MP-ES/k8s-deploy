@@ -58,7 +58,7 @@ func GetDeployedIngresses(finalDeployedPath string, repository *Repository, kEnv
 	var globalErr *multierror.Error
 	ingresses := []string{}
 
-	if _, ok := (*repository.GitOpsRules.Ingresses)[*kEnv]; !ok {
+	if _, ok := (*repository.GitOpsRules.Ingresses)[kEnv.Name]; !ok {
 		return ingresses, nil // don't have ingress
 	}
 
@@ -89,7 +89,7 @@ func GetIngressesHostReplace(appDeployPath string, repository *Repository, gitOp
 	var globalErr *multierror.Error
 	ingressReplacements := []*infra.IngressReplacement{}
 
-	if _, ok := (*repository.GitOpsRules.Ingresses)[*kEnv]; eventRef.Type != utils.EventTypePullRequest || !ok {
+	if _, ok := (*repository.GitOpsRules.Ingresses)[kEnv.Name]; eventRef.Type != utils.EventTypePullRequest || !ok {
 		return nil, nil // don't have ingress or is not PR
 	}
 
