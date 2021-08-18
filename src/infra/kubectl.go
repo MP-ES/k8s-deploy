@@ -1,15 +1,34 @@
 package infra
 
 import (
+	"fmt"
 	"os/exec"
 )
 
-func KubectlApply(finalDeployedPath string) (string, error) {
-	cmdStep1, err := exec.Command("kubectl", "apply", "-f", finalDeployedPath).CombinedOutput()
-	if err == nil {
-		return string(cmdStep1), err
+func KubectlCheckClusterConnection(kEnv string) error {
+	cmdRes, err := exec.Command("kubectl", "config", "set", "current-context", kEnv, getKubeconfigParam(kEnv)).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error on set K8S context: %s", cmdRes)
 	}
 
-	cmdStep2, err := exec.Command("kubectl", "apply", "-f", finalDeployedPath).CombinedOutput()
-	return string(cmdStep2), err
+	cmdRes, err = exec.Command("kubectl", "get", "nodes", getKubeconfigParam(kEnv)).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error on try cluster connection: %s", cmdRes)
+	}
+
+	return nil
+}
+
+func KubectlApply(finalDeployedPath string) (string, error) {
+	cmdResStep1, err := exec.Command("kubectl", "apply", "-f", finalDeployedPath).CombinedOutput()
+	if err == nil {
+		return string(cmdResStep1), err
+	}
+
+	cmdResStep2, err := exec.Command("kubectl", "apply", "-f", finalDeployedPath).CombinedOutput()
+	return string(cmdResStep2), err
+}
+
+func getKubeconfigParam(kEnv string) string {
+	return "--kubeconfig=" + GetKubeconfigPath(kEnv)
 }

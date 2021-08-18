@@ -109,6 +109,11 @@ func (d *DeployEnv) ValidateRules() error {
 				globalErr = multierror.Append(globalErr, err)
 			}
 
+			// validate kubeconfig
+			if err = kEnv.ValidateKubeconfig(); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
 		}
 	}
 	return globalErr.ErrorOrNil()

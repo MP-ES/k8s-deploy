@@ -1,8 +1,10 @@
 package entities
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"k8s-deploy/infra"
 	"k8s-deploy/utils"
 	"os"
 	"strings"
@@ -38,6 +40,23 @@ func (k *K8sEnv) IsValidToRepository(gitOpsRepo *GitOpsRepository, repoRules *Re
 		if _, ok := gitOpsRepo.AvailableK8sEnvsToPR[k.Name]; !ok {
 			return fmt.Errorf("k8s-env '%s' is not enabled in repository '%s' on pull request events", k.Name, repoRules.Name)
 		}
+	}
+
+	return nil
+}
+
+func (k *K8sEnv) ValidateKubeconfig() error {
+	content, err := base64.StdEncoding.DecodeString(k.Kubeconfig)
+	if err != nil {
+		return fmt.Errorf("wrong kubeconfig data format: %s", err.Error())
+	}
+
+	if res := infra.CreateKubeconfigFile(k.Name, content); !res {
+		return errors.New("error when try create kubeconfig file")
+	}
+
+	if err := infra.KubectlCheckClusterConnection(k.Name); err != nil {
+		return err
 	}
 
 	return nil
