@@ -4,13 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"k8s-deploy/utils"
+	"os"
 	"strings"
 
 	"github.com/sethvargo/go-githubactions"
 )
 
 type K8sEnv struct {
-	Name string
+	Name       string
+	Kubeconfig string
 }
 
 func (k *K8sEnv) String() string {
@@ -45,7 +47,13 @@ func getK8sEnv(availableK8sEnvs *map[string]struct{}, s string) (*K8sEnv, error)
 	if _, ok := (*availableK8sEnvs)[s]; !ok {
 		return nil, fmt.Errorf("kubernetes environment '%s' unknown", s)
 	}
-	return &K8sEnv{Name: s}, nil
+
+	kubeconfig := os.Getenv(fmt.Sprintf("base64_kubeconfig_%s", s))
+	if kubeconfig == "" {
+		return nil, fmt.Errorf("kubeconfig of k8s-env '%s' not set (expected value in base64_kubeconfig_%s environment variable)", s, s)
+	}
+
+	return &K8sEnv{Name: s, Kubeconfig: kubeconfig}, nil
 }
 
 func GetK8sDeployEnvironments(availableK8sEnvs *map[string]struct{}) ([]*K8sEnv, error) {

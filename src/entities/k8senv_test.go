@@ -1,6 +1,7 @@
 package entities_test
 
 import (
+	"fmt"
 	"k8s-deploy/entities"
 	"k8s-deploy/utils"
 	"os"
@@ -18,9 +19,13 @@ type k8sDeployEnvsTest struct {
 var k8sDeployEnvsTests = [...]k8sDeployEnvsTest{
 	{"", nil, "'k8s-env' is required"},
 	{"wrong-env", nil, "kubernetes environment 'wrong-env' unknown"},
-	{"test1\n", []*entities.K8sEnv{{Name: "test1"}}, ""},
-	{"test1\ntest4", []*entities.K8sEnv{{Name: "test1"}}, "kubernetes environment 'test4' unknown"},
-	{"test1\ntest3\ntest2", []*entities.K8sEnv{{Name: "test1"}, {Name: "test3"}, {Name: "test2"}}, ""},
+	{"test1\n", []*entities.K8sEnv{{Name: "test1", Kubeconfig: "test"}}, ""},
+	{"test1\ntest4", []*entities.K8sEnv{{Name: "test1", Kubeconfig: "test"}}, "kubernetes environment 'test4' unknown"},
+	{"test1\ntest3\ntest2", []*entities.K8sEnv{
+		{Name: "test1", Kubeconfig: "test"},
+		{Name: "test3", Kubeconfig: "test"},
+		{Name: "test2", Kubeconfig: "test"}},
+		""},
 }
 
 func TestGetK8sDeployEnvironments(t *testing.T) {
@@ -33,6 +38,9 @@ func TestGetK8sDeployEnvironments(t *testing.T) {
 	for _, test := range k8sDeployEnvsTests {
 		orig := os.Getenv("INPUT_K8S-ENVS")
 		os.Setenv("INPUT_K8S-ENVS", test.inputK8sEnvs)
+		for _, e := range test.expectedK8sEnvs {
+			os.Setenv(fmt.Sprintf("base64_kubeconfig_%s", e.Name), "test")
+		}
 		t.Cleanup(func() { os.Setenv("INPUT_K8S-ENVS", orig) })
 
 		k8sEnvs, err := entities.GetK8sDeployEnvironments(&availableK8sEnvs)

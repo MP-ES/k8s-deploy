@@ -31,7 +31,38 @@ The owner must have a repository named **gitops** with the rules of application 
     # list of app secrets, defined in gitOps repository
     app_secret1: ${{ secrets.app_secret1 }}
     app_secret2: ${{ secrets.app_secret2 }}
+
+    # base64 of kubeconfig file for each Kubernetes environment defined in k8s-envs
+    # See below an example of an expected kubeconfig
+    base64_kubeconfig_env1: ${{ secrets.base64_kubeconfig_env1 }}
+    base64_kubeconfig_env2: ${{ secrets.base64_kubeconfig_env2 }}
 ```
+
+### kubeconfig example
+
+The most important part is the **context name**, which **must be** the same as the **Kubernetes environment name** to which the kubeconfig belongs.
+
+```yaml
+apiVersion: v1
+kind: Config
+clusters:
+  - cluster:
+      certificate-authority-data: base64-encoded of ca-file
+      server: https://server.domain.com:6443
+    name: k8s-cluster
+users:
+  - name: kube-admin-user
+    user:
+      client-certificate-data: base64-encoded of cert-file
+      client-key-data: base64-encoded of key-file
+contexts:
+  - context:
+      cluster: k8s-cluster
+      user: kube-admin-user
+    name: env1
+```
+
+You can generate a base64 of the file with `base64 kubeconfig_file.yaml`.
 
 ## Outputs
 
