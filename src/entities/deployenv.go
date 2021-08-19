@@ -170,7 +170,7 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 		var deployedIngresses []string
 		var applyLog string
 		if globalErr == nil {
-			if applyLog, err = infra.KubectlApply(finalDeployedPath); err != nil {
+			if applyLog, err = infra.KubectlApply(k.Name, finalDeployedPath); err != nil {
 				globalErr = multierror.Append(globalErr, err)
 			}
 

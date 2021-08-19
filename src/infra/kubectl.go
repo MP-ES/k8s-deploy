@@ -19,14 +19,18 @@ func KubectlCheckClusterConnection(kEnv string) error {
 	return nil
 }
 
-func KubectlApply(finalDeployedPath string) (string, error) {
-	cmdResStep1, err := exec.Command("kubectl", "apply", "-f", finalDeployedPath).CombinedOutput()
+func KubectlApply(kEnv string, finalDeployedPath string) (string, error) {
+	cmdResStep1, err := createApplyCmd(kEnv, finalDeployedPath).CombinedOutput()
 	if err == nil {
 		return string(cmdResStep1), err
 	}
 
-	cmdResStep2, err := exec.Command("kubectl", "apply", "-f", finalDeployedPath).CombinedOutput()
+	cmdResStep2, err := createApplyCmd(kEnv, finalDeployedPath).CombinedOutput()
 	return string(cmdResStep2), err
+}
+
+func createApplyCmd(kEnv string, finalDeployedPath string) *exec.Cmd {
+	return exec.Command("kubectl", "apply", "-f", finalDeployedPath, getKubeconfigParam(kEnv))
 }
 
 func getKubeconfigParam(kEnv string) string {
