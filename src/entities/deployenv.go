@@ -28,14 +28,15 @@ type DeployEnv struct {
 	k8sEnvs          []*K8sEnv
 	eventRef         *eventRef
 	manifestDir      *string
+	Strategy         *Strategy
 }
 
 type DeploymentResult struct {
-	K8sEnv    string
-	Deployed  bool
-	ErrMsg    string
-	ApplyLog  string
-	Ingresses []string
+	K8sEnv        string
+	Deployed      bool
+	ErrMsg        string
+	DeploymentLog string
+	Ingresses     []string
 }
 
 func GetDeployEnvironment() (DeployEnv, error) {
@@ -56,6 +57,9 @@ func GetDeployEnvironment() (DeployEnv, error) {
 			globalErr = multierror.Append(globalErr, err)
 		}
 		if deployEnv.manifestDir, err = getManifestDir(); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+		if deployEnv.Strategy, err = GetStrategy(); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
 
@@ -168,9 +172,9 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 
 		// kubectl apply only if do not have previous errors
 		var deployedIngresses []string
-		var applyLog string
+		var deploymentLog string
 		if globalErr == nil {
-			if applyLog, err = infra.KubectlApply(k.Name, finalDeployedPath); err != nil {
+			if deploymentLog, err = d.Strategy.Deploy(k, finalDeployedPath); err != nil {
 				globalErr = multierror.Append(globalErr, err)
 			}
 
@@ -189,11 +193,11 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 
 		result = append(result,
 			DeploymentResult{
-				K8sEnv:    k.Name,
-				Deployed:  deployErr == nil,
-				ErrMsg:    msgErr,
-				Ingresses: deployedIngresses,
-				ApplyLog:  applyLog,
+				K8sEnv:        k.Name,
+				Deployed:      deployErr == nil,
+				ErrMsg:        msgErr,
+				Ingresses:     deployedIngresses,
+				DeploymentLog: deploymentLog,
 			})
 	}
 

@@ -27,6 +27,11 @@ The owner must have a repository named **gitops** with the rules of application 
     # GitHub PAT with read permission on gitOps repository, if gitOps is private
     gitops-token: ${{ secrets.SECRET_NAME }}
 
+    # Deployment strategy to be used. Allowed values are none, canary and blue-green
+    # More details below
+    # DEFAULT: none
+    strategy: none
+
   env:
     # list of app secrets, defined in gitOps repository
     app_secret1: ${{ secrets.app_secret1 }}
@@ -37,6 +42,22 @@ The owner must have a repository named **gitops** with the rules of application 
     base64_kubeconfig_env1: ${{ secrets.base64_kubeconfig_env1 }}
     base64_kubeconfig_env2: ${{ secrets.base64_kubeconfig_env2 }}
 ```
+
+### Strategy
+
+Deployment strategy to be used while applying manifest files on the cluster. Acceptable values are none, canary and blue-green.
+
+#### none
+
+No deployment strategy is used when deploying. The files are changed on the cluster in force mode. This is sufficient to pull requests deployments or if the application can have short downtime during deployment.
+
+#### canary
+
+*not implemented yet.*
+
+#### blue-green
+
+*not implemented yet.*
 
 ### kubeconfig example
 
@@ -80,7 +101,7 @@ Output example:
       "K8sEnv":"dev",
       "Deployed":true,
       "ErrMsg":"",
-      "ApplyLog":"deployment.apps/test created\nservice/test created\ningress.extensions/test created\nnamespace/test unchanged\nresourcequota/test unchanged\nsecret/test unchanged\n",
+      "DeploymentLog":"deployment.apps/test created\nservice/test created\ningress.extensions/test created\nnamespace/test unchanged\nresourcequota/test unchanged\nsecret/test unchanged\n",
       "Ingresses":[
          "ingress.env.domain.com"
       ]
@@ -89,7 +110,7 @@ Output example:
       "K8sEnv":"app",
       "Deployed":false,
       "ErrMsg":"1 error occurred:\n\t* exit status 1\n\n",
-      "ApplyLog":"resourcequota/test created\nsecret/test created\nError from server (NotFound): error when creating \"../.deploy/pr/final.yaml\": namespaces \"test\" not found\n",
+      "DeploymentLog":"resourcequota/test created\nsecret/test created\nError from server (NotFound): error when creating \"../.deploy/pr/final.yaml\": namespaces \"test\" not found\n",
       "Ingresses":[]
    }
 ]

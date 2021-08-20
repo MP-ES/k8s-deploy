@@ -30,7 +30,7 @@ func KubectlApply(kEnv string, finalDeployedPath string) (string, error) {
 }
 
 func createApplyCmd(kEnv string, finalDeployedPath string) *exec.Cmd {
-	return exec.Command("kubectl", "apply", "-f", finalDeployedPath, getKubeconfigParam(kEnv))
+	return exec.Command("kubectl", "apply", "--force", "-f", finalDeployedPath, getKubeconfigParam(kEnv))
 }
 
 func getKubeconfigParam(kEnv string) string {
