@@ -6,12 +6,12 @@ type RepositoryRules struct {
 	Images          []*Image               `yaml:"images,flow"`
 	Secrets         []*Secret              `yaml:"secrets,flow"`
 	ResourcesQuotas *ResourcesQuotas       `yaml:"resources-quotas"`
-	Ingresses       *map[K8sEnv][]*Ingress `yaml:"ingresses"`
+	Ingresses       *map[string][]*Ingress `yaml:"ingresses"`
 }
 
 func (r *RepositoryRules) IsK8sEnvEnabled(kEnv *K8sEnv) bool {
 	for _, k := range r.K8sEnvs {
-		if *k == *kEnv {
+		if k.Name == kEnv.Name {
 			return true
 		}
 	}
@@ -37,11 +37,11 @@ func (r *RepositoryRules) IsSecretEnabled(secretName string) bool {
 }
 
 func (r *RepositoryRules) IsIngressEnabled(ingress string, kEnv K8sEnv) bool {
-	if _, ok := (*r.Ingresses)[kEnv]; !ok {
+	if _, ok := (*r.Ingresses)[kEnv.Name]; !ok {
 		return false // K8S env not available
 	}
 
-	for _, i := range (*r.Ingresses)[kEnv] {
+	for _, i := range (*r.Ingresses)[kEnv.Name] {
 		if i.Name == ingress {
 			return true
 		}

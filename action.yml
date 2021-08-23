@@ -15,6 +15,10 @@ inputs:
   gitops-token:
     description: "GitHub PAT with read permission on GitOps repository, if it's private"
     required: false
+  strategy:
+    description: "Deployment strategy to be used. Allowed values are none, canary and blue-green"
+    required: false
+    default: "none"
 outputs:
   status:
     description: "JSON object with the status of deployment by K8S environment"
@@ -25,3 +29,4 @@ runs:
     - ${{ inputs.k8s-envs }}
     - ${{ inputs.manifest-dir }}
     - ${{ inputs.gitops-token }}
+    - ${{ inputs.strategy }}

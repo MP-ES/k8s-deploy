@@ -28,12 +28,15 @@ type DeployEnv struct {
 	k8sEnvs          []*K8sEnv
 	eventRef         *eventRef
 	manifestDir      *string
+	Strategy         *Strategy
 }
 
 type DeploymentResult struct {
-	K8sEnv   string
-	Deployed bool
-	ErrMsg   string
+	K8sEnv        string
+	Deployed      bool
+	ErrMsg        string
+	DeploymentLog string
+	Ingresses     []string
 }
 
 func GetDeployEnvironment() (DeployEnv, error) {
@@ -54,6 +57,9 @@ func GetDeployEnvironment() (DeployEnv, error) {
 			globalErr = multierror.Append(globalErr, err)
 		}
 		if deployEnv.manifestDir, err = getManifestDir(); err != nil {
+			globalErr = multierror.Append(globalErr, err)
+		}
+		if deployEnv.Strategy, err = GetStrategy(); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
 
@@ -107,6 +113,11 @@ func (d *DeployEnv) ValidateRules() error {
 				globalErr = multierror.Append(globalErr, err)
 			}
 
+			// validate kubeconfig
+			if err = kEnv.ValidateKubeconfig(); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
 		}
 	}
 	return globalErr.ErrorOrNil()
@@ -125,6 +136,7 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 
 		// generate deployment data
 		appDeployPath := infra.GetYAMLApplicationPath(k.Name, d.eventRef.Type)
+		finalDeployedPath := infra.GetYAMLFinalKustomizePath(k.Name, d.eventRef.Type)
 		if secrets, err = GetSecretsDeploy(appDeployPath); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
@@ -158,18 +170,34 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 			globalErr = multierror.Append(globalErr, err)
 		}
 
+		// kubectl apply only if do not have previous errors
+		var deployedIngresses []string
+		var deploymentLog string
+		if globalErr == nil {
+			if deploymentLog, err = d.Strategy.Deploy(k, finalDeployedPath); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
+			// get deployed ingresses
+			if deployedIngresses, err = GetDeployedIngresses(finalDeployedPath, d.Repository, k); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+		}
+
 		// save result
-		msg := ""
-		status := globalErr.ErrorOrNil()
-		if status != nil {
-			msg = status.Error()
+		msgErr := ""
+		deployErr := globalErr.ErrorOrNil()
+		if deployErr != nil {
+			msgErr = deployErr.Error()
 		}
 
 		result = append(result,
 			DeploymentResult{
-				K8sEnv:   k.Name,
-				Deployed: status == nil,
-				ErrMsg:   msg,
+				K8sEnv:        k.Name,
+				Deployed:      deployErr == nil,
+				ErrMsg:        msgErr,
+				Ingresses:     deployedIngresses,
+				DeploymentLog: deploymentLog,
 			})
 	}
 

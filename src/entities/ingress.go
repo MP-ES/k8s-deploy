@@ -54,12 +54,42 @@ func ValidateIngressesFromAppDeploy(appDeployPath string, kEnv *K8sEnv, repoRule
 	return globalErr.ErrorOrNil()
 }
 
+func GetDeployedIngresses(finalDeployedPath string, repository *Repository, kEnv *K8sEnv) ([]string, error) {
+	var globalErr *multierror.Error
+	ingresses := []string{}
+
+	if _, ok := (*repository.GitOpsRules.Ingresses)[kEnv.Name]; !ok {
+		return ingresses, nil // don't have ingress
+	}
+
+	// get ingresses hosts
+	search, err := infra.YqSearchQueryInFileWithJsonReturn(finalDeployedPath,
+		"{\"name\": .metadata.name, \"kind\": .kind, \"hosts\": [.spec.rules[].host]} | select (.kind == \"Ingress\")")
+
+	if err != nil {
+		globalErr = multierror.Append(globalErr, err)
+	} else {
+		scanner := bufio.NewScanner(search)
+		for scanner.Scan() {
+			var ingHosts ingressHosts
+			if err := json.Unmarshal(scanner.Bytes(), &ingHosts); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			} else {
+				ingresses = append(ingresses, ingHosts.Hosts...)
+			}
+		}
+	}
+
+	return ingresses, globalErr.ErrorOrNil()
+
+}
+
 func GetIngressesHostReplace(appDeployPath string, repository *Repository, gitOpsRepo *GitOpsRepository,
 	eventRef *eventRef, kEnv *K8sEnv) ([]*infra.IngressReplacement, error) {
 	var globalErr *multierror.Error
 	ingressReplacements := []*infra.IngressReplacement{}
 
-	if _, ok := (*repository.GitOpsRules.Ingresses)[*kEnv]; eventRef.Type != utils.EventTypePullRequest || !ok {
+	if _, ok := (*repository.GitOpsRules.Ingresses)[kEnv.Name]; eventRef.Type != utils.EventTypePullRequest || !ok {
 		return nil, nil // don't have ingress or is not PR
 	}
 

@@ -1,6 +1,7 @@
 package infra
 
 import (
+	"io/ioutil"
 	"k8s-deploy/utils"
 	"os"
 	"path/filepath"
@@ -46,11 +47,19 @@ func getTemplatesDir() string {
 	return ""
 }
 
+func GetKubeconfigPath(kEnv string) string {
+	return filepath.Join(GetDeploymentDir(), "kubeconfig_"+kEnv+".yaml")
+}
+
 func ClearDeploy() {
 	err := os.RemoveAll(GetDeploymentDir())
 	if err != nil {
 		githubactions.Fatalf("error when clean the deployment directory. The container can have sensitive data!")
 	}
+}
+
+func CreateKubeconfigFile(kEnv string, content []byte) bool {
+	return ioutil.WriteFile(GetKubeconfigPath(kEnv), content, 0600) == nil
 }
 
 func GenerateInitialDeploymentStructure(kEnvs *map[string]struct{}, eventType string) error {
