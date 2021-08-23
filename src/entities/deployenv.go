@@ -204,6 +204,12 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 	return result
 }
 
+func (d *DeployEnv) PostApplyActions(result *[]DeploymentResult) {
+	if d.eventRef.Type != utils.EventTypePullRequest {
+		return
+	}
+}
+
 func getEventReference(repoUrl string) (*eventRef, error) {
 	eventRef := new(eventRef)
 
