@@ -37,14 +37,19 @@ func main() {
 	if deployenv, err = entities.GetDeployEnvironment(); err != nil {
 		githubactions.Fatalf(err.Error())
 	}
+
 	if err = deployenv.ValidateRules(); err != nil {
 		githubactions.Fatalf(err.Error())
 	}
+
 	deploymentResult := deployenv.Apply()
 	if deploymentResultByte, err = json.Marshal(deploymentResult); err != nil {
 		githubactions.Fatalf(err.Error())
 	}
-	deployenv.PostApplyActions(&deploymentResult)
+
+	if err = deployenv.PostApplyActions(&deploymentResult); err != nil {
+		githubactions.Warningf(err.Error())
+	}
 
 	githubactions.SetOutput("status", string(deploymentResultByte))
 }

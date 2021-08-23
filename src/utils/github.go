@@ -40,6 +40,19 @@ func GetGithubEventUrl(repoUrl string, eventType string, eventIdentifier string)
 	return repoUrl
 }
 
+func UpdatePullRequestComment(token string, owner string, repo string, pullRequestId int, newComment string) error {
+	ctx := context.Background()
+	client := getGithubClient(ctx, token)
+	pullRequest, _, err := client.PullRequests.Get(ctx, owner, repo, pullRequestId)
+	if err != nil {
+		return fmt.Errorf("error on get pull request '%d': %s", pullRequestId, err.Error())
+	}
+	fmt.Println(pullRequest)
+	fmt.Println(pullRequest)
+	fmt.Println(pullRequest)
+	return nil
+}
+
 func GetGithubRepository(token string, owner string, repo string) (*github.Repository, error) {
 	ctx := context.Background()
 	client := getGithubClient(ctx, token)
