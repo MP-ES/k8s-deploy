@@ -7,6 +7,7 @@ import (
 	"k8s-deploy/utils"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/sethvargo/go-githubactions"
@@ -29,14 +30,6 @@ type DeployEnv struct {
 	eventRef         *eventRef
 	manifestDir      *string
 	Strategy         *Strategy
-}
-
-type DeploymentResult struct {
-	K8sEnv        string
-	Deployed      bool
-	ErrMsg        string
-	DeploymentLog string
-	Ingresses     []string
 }
 
 func GetDeployEnvironment() (DeployEnv, error) {
@@ -202,6 +195,24 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 	}
 
 	return result
+}
+
+func (d *DeployEnv) PostApplyActions(result *[]DeploymentResult) error {
+	if d.eventRef.Type != utils.EventTypePullRequest {
+		return nil
+	}
+
+	pullRequestId, err := strconv.Atoi(d.eventRef.Identifier)
+	if err != nil {
+		return fmt.Errorf("pull request '%s' is invalid", d.eventRef.Identifier)
+	}
+
+	pullRequestComment := GeneratePullRequestComment(result)
+	err = utils.UpdatePullRequestComment(d.Repository.AccessToken,
+		d.Repository.Owner, d.Repository.Name,
+		pullRequestId, pullRequestComment)
+
+	return err
 }
 
 func getEventReference(repoUrl string) (*eventRef, error) {

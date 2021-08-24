@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/google/go-github/v35/github"
@@ -38,6 +39,31 @@ func GetGithubEventUrl(repoUrl string, eventType string, eventIdentifier string)
 		return fmt.Sprintf("%s/tree/%s", repoUrl, eventIdentifier)
 	}
 	return repoUrl
+}
+
+func UpdatePullRequestComment(token string, owner string, repo string, pullRequestId int, newComment string) error {
+	ctx := context.Background()
+	client := getGithubClient(ctx, token)
+	pullRequest, _, err := client.PullRequests.Get(ctx, owner, repo, pullRequestId)
+	if err != nil {
+		return fmt.Errorf("error on get pull request '%d': %s", pullRequestId, err.Error())
+	}
+
+	if pullRequest.Body != nil && *pullRequest.Body != "" {
+		re := regexp.MustCompile(fmt.Sprintf("(?m)^%s.*$", regexp.QuoteMeta(PrBadgeInitialString)))
+		oldComment := re.ReplaceAllString(*pullRequest.Body, "")
+		newComment = newComment + "\n\n" + strings.TrimSpace(oldComment)
+	}
+
+	pullRequest.Body = &newComment
+
+	_, _, err = client.PullRequests.Edit(ctx, owner, repo, pullRequestId, pullRequest)
+
+	if err != nil {
+		return fmt.Errorf("error on update pull request '%d': %s", pullRequestId, err.Error())
+	}
+
+	return nil
 }
 
 func GetGithubRepository(token string, owner string, repo string) (*github.Repository, error) {

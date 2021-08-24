@@ -25,7 +25,7 @@ func setLogging() {
 
 func main() {
 	var deployenv entities.DeployEnv
-	var deploymentResult []byte
+	var deploymentResultByte []byte
 	var err error
 
 	// destroy the deployment directory to avoid keep sensitive data
@@ -37,12 +37,19 @@ func main() {
 	if deployenv, err = entities.GetDeployEnvironment(); err != nil {
 		githubactions.Fatalf(err.Error())
 	}
+
 	if err = deployenv.ValidateRules(); err != nil {
 		githubactions.Fatalf(err.Error())
 	}
-	if deploymentResult, err = json.Marshal(deployenv.Apply()); err != nil {
+
+	deploymentResult := deployenv.Apply()
+	if deploymentResultByte, err = json.Marshal(deploymentResult); err != nil {
 		githubactions.Fatalf(err.Error())
 	}
 
-	githubactions.SetOutput("status", string(deploymentResult))
+	if err = deployenv.PostApplyActions(&deploymentResult); err != nil {
+		githubactions.Warningf(err.Error())
+	}
+
+	githubactions.SetOutput("status", string(deploymentResultByte))
 }

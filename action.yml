@@ -12,6 +12,10 @@ inputs:
     description: "Path to the manifest directory, with files to be used for deployment"
     required: false
     default: "kubernetes"
+  repo-token:
+    description: "Personal access token (PAT) used to manage comments on pull request"
+    required: false
+    default: ${{ github.token }}
   gitops-token:
     description: "GitHub PAT with read permission on GitOps repository, if it's private"
     required: false
@@ -28,5 +32,6 @@ runs:
   args:
     - ${{ inputs.k8s-envs }}
     - ${{ inputs.manifest-dir }}
+    - ${{ inputs.repo-token }}
     - ${{ inputs.gitops-token }}
     - ${{ inputs.strategy }}

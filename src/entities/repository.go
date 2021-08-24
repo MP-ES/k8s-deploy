@@ -6,10 +6,14 @@ import (
 	"k8s-deploy/utils"
 	"os"
 	"strings"
+
+	"github.com/sethvargo/go-githubactions"
 )
 
 type Repository struct {
 	Name        string
+	Owner       string
+	AccessToken string
 	Url         string
 	GitOpsRules *RepositoryRules
 }
@@ -23,11 +27,13 @@ func GetRepository(gitOpsRepo *GitOpsRepository) (*Repository, error) {
 	}
 
 	if repoParts := strings.Split(repoName, "/"); len(repoParts) > 1 {
+		repository.Owner = repoParts[0]
 		repository.Name = repoParts[1]
 	} else {
 		return nil, errors.New("repository name format different from expected")
 	}
 	repository.Url = fmt.Sprint(utils.GithubUrl, repoName)
+	repository.AccessToken = githubactions.GetInput("repo-token")
 
 	// load gitOps Schema
 	if err := repository.loadGitOpsSchema(gitOpsRepo); err != nil {
