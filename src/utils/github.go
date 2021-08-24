@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/google/go-github/v35/github"
@@ -47,9 +48,21 @@ func UpdatePullRequestComment(token string, owner string, repo string, pullReque
 	if err != nil {
 		return fmt.Errorf("error on get pull request '%d': %s", pullRequestId, err.Error())
 	}
-	fmt.Println(pullRequest)
-	fmt.Println(pullRequest)
-	fmt.Println(pullRequest)
+
+	if pullRequest.Body != nil && *pullRequest.Body != "" {
+		re := regexp.MustCompile(fmt.Sprintf("(?m)^%s.*$", regexp.QuoteMeta(PrBadgeInitialString)))
+		oldComment := re.ReplaceAllString(*pullRequest.Body, "")
+		newComment = newComment + "\n\n" + strings.TrimSpace(oldComment)
+	}
+
+	pullRequest.Body = &newComment
+
+	_, _, err = client.PullRequests.Edit(ctx, owner, repo, pullRequestId, pullRequest)
+
+	if err != nil {
+		return fmt.Errorf("error on update pull request '%d': %s", pullRequestId, err.Error())
+	}
+
 	return nil
 }
 

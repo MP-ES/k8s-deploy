@@ -9,3 +9,5 @@ const (
 	EventTypeTag         string = "tags"
 	EventTypeHead        string = "heads"
 )
+
+const PrBadgeInitialString = "[![k8s-deploy]"
