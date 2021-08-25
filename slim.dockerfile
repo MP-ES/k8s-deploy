@@ -8,6 +8,10 @@ FROM golang:1.16 AS builder
 # Install upx (upx.github.io) to compress the compiled action
 RUN apt-get update && apt-get --no-install-recommends -y install upx &&  rm -rf /var/lib/apt/lists/*
 
+# Install kubectl
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+  install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
 # Disable CGO
 ENV CGO_ENABLED=0
 
@@ -43,14 +47,13 @@ FROM scratch
 ENV TEMPLATES_DIR=/src/templates
 ENV DEPLOYMENT_DIR=/tmp/k8s-deploy
 
-# Install kubectl
-RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
-  install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-
 # Copy over SSL certificates from the first step - this is required
 # if our code makes any outbound SSL connections because it contains
 # the root CA bundle.
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# Copy the kubectl
+COPY --from=builder /usr/local/bin/kubectl /usr/local/bin/kubectl
 
 # Copy over the compiled action from the first step
 COPY --from=builder /bin/action /bin/action
