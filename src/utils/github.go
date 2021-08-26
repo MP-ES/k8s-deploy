@@ -55,7 +55,7 @@ func UpdatePullRequestBody(token string, owner string, repo string, pullRequestI
 		newBody = newBody + "\n\n" + strings.TrimSpace(oldBody)
 	}
 
-	err = editPullRequestBody(client, owner, repo, pullRequestId, newBody)
+	_, err = editPullRequestBody(client, ctx, owner, repo, pullRequestId, newBody)
 
 	if err != nil {
 		return fmt.Errorf("error on update pull request '%d': %s", pullRequestId, err.Error())
@@ -103,7 +103,7 @@ func getGithubClient(ctx context.Context, token string) *github.Client {
 	return client
 }
 
-func editPullRequestBody(client *github.Client, owner string, repo string, number int, newBody string) error {
+func editPullRequestBody(client *github.Client, ctx context.Context, owner string, repo string, number int, newBody string) (*github.Response, error) {
 	u := fmt.Sprintf("repos/%v/%v/pulls/%d", owner, repo, number)
 
 	type bodyUpdate struct {
@@ -114,10 +114,15 @@ func editPullRequestBody(client *github.Client, owner string, repo string, numbe
 		Body: &newBody,
 	}
 
-	_, err := client.NewRequest("PATCH", u, update)
+	req, err := client.NewRequest("PATCH", u, update)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	resp, err := client.Do(ctx, req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
 }
