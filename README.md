@@ -4,6 +4,7 @@ Action that deploys an application in an On-Premises Kubernetes cluster based in
 
 [![Coverage](https://codecov.io/gh/MP-ES/k8s-deploy/branch/main/graphs/badge.svg?branch=main)](https://codecov.io/gh/MP-ES/k8s-deploy)
 [![Integration](https://github.com/MP-ES/k8s-deploy/workflows/Integration/badge.svg)](https://github.com/MP-ES/k8s-deploy/actions?query=workflow%3AIntegration)
+[![Release](https://github.com/MP-ES/k8s-deploy/workflows/Release/badge.svg)](https://github.com/MP-ES/k8s-deploy/actions?query=workflow%3ARelease)
 
 ## Requirements
 
@@ -13,7 +14,7 @@ The owner must have a repository named **gitops** with the rules of application 
 
 ```yaml
 - name: Deploy on on-premises K8S
-  uses: MP-ES/k8s-deploy@main
+  uses: MP-ES/k8s-deploy@v1
   with:
     # Multiline input where each line contains the name of a Kubernetes environment defined in the GitOps repository
     k8s-envs: |
@@ -25,6 +26,7 @@ The owner must have a repository named **gitops** with the rules of application 
     manifest-dir: kubernetes
 
     # Personal access token (PAT) used to manage comments on pull request
+    # DEFAULT: ${{ github.token }}
     gitops-token: ${{ github.token }}
 
     # GitHub PAT with read permission on gitOps repository, if gitOps is private

@@ -28,7 +28,7 @@ outputs:
     description: "JSON object with the status of deployment by K8S environment"
 runs:
   using: docker
-  image: Dockerfile
+  image: docker://mpespiritosanto/k8s-deploy:v1
   args:
     - ${{ inputs.k8s-envs }}
     - ${{ inputs.manifest-dir }}
