@@ -208,7 +208,7 @@ func (d *DeployEnv) PostApplyActions(result *[]DeploymentResult) error {
 	}
 
 	pullRequestComment := GeneratePullRequestComment(result)
-	err = utils.UpdatePullRequestComment(d.Repository.AccessToken,
+	err = utils.UpdatePullRequestBody(d.Repository.AccessToken,
 		d.Repository.Owner, d.Repository.Name,
 		pullRequestId, pullRequestComment)
 

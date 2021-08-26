@@ -41,7 +41,7 @@ func GetGithubEventUrl(repoUrl string, eventType string, eventIdentifier string)
 	return repoUrl
 }
 
-func UpdatePullRequestComment(token string, owner string, repo string, pullRequestId int, newComment string) error {
+func UpdatePullRequestBody(token string, owner string, repo string, pullRequestId int, newBody string) error {
 	ctx := context.Background()
 	client := getGithubClient(ctx, token)
 	pullRequest, _, err := client.PullRequests.Get(ctx, owner, repo, pullRequestId)
@@ -51,13 +51,11 @@ func UpdatePullRequestComment(token string, owner string, repo string, pullReque
 
 	if pullRequest.Body != nil && *pullRequest.Body != "" {
 		re := regexp.MustCompile(fmt.Sprintf("(?m)^%s.*$", regexp.QuoteMeta(PrBadgeInitialString)))
-		oldComment := re.ReplaceAllString(*pullRequest.Body, "")
-		newComment = newComment + "\n\n" + strings.TrimSpace(oldComment)
+		oldBody := re.ReplaceAllString(*pullRequest.Body, "")
+		newBody = newBody + "\n\n" + strings.TrimSpace(oldBody)
 	}
 
-	pullRequest.Body = &newComment
-
-	_, _, err = client.PullRequests.Edit(ctx, owner, repo, pullRequestId, pullRequest)
+	err = editPullRequestBody(client, owner, repo, pullRequestId, newBody)
 
 	if err != nil {
 		return fmt.Errorf("error on update pull request '%d': %s", pullRequestId, err.Error())
@@ -103,4 +101,23 @@ func getGithubClient(ctx context.Context, token string) *github.Client {
 
 	client := github.NewClient(tc)
 	return client
+}
+
+func editPullRequestBody(client *github.Client, owner string, repo string, number int, newBody string) error {
+	u := fmt.Sprintf("repos/%v/%v/pulls/%d", owner, repo, number)
+
+	type bodyUpdate struct {
+		Body *string `json:"body,omitempty"`
+	}
+
+	update := &bodyUpdate{
+		Body: &newBody,
+	}
+
+	_, err := client.NewRequest("PATCH", u, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
