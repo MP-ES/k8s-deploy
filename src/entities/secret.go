@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"encoding/base64"
 	"fmt"
 	"k8s-deploy/infra"
 	"os"
@@ -71,7 +72,7 @@ func GetSecretsDeploy(secrets []*Secret) map[string]string {
 	secretsList := map[string]string{}
 
 	for _, secret := range secrets {
-		secretsList[secret.Name] = os.Getenv(secret.Name)
+		secretsList[secret.Name] = base64.StdEncoding.EncodeToString([]byte(os.Getenv(secret.Name)))
 	}
 
 	return secretsList

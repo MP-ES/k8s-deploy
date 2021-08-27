@@ -9,12 +9,6 @@ commonLabels:
 commonAnnotations:
   githubUrl: {{ .GithubUrl }}
 
-{{ if .Secrets -}}
-secretGenerator:
-  - name: {{ .RepoName }}
-    env: .env
-{{- end }}
-
 {{ if .ImagesReplace -}}
 images:
 {{- range $Name, $NewTag := .ImagesReplace }}
@@ -44,3 +38,6 @@ resources:
   - application.yaml
   - namespace.yaml
   - resourceQuota.yaml
+  {{ if .Secrets -}}
+  - secrets.yaml
+  {{- end }}

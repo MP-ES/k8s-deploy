@@ -38,9 +38,10 @@ func GenerateResourceQuotaTmplData(repoName string, eventType string, eventIdent
 	return data
 }
 
-func GenerateEnvTmplData(secrets map[string]string) interface{} {
+func GenerateSecretsTmplData(repoName string, secrets map[string]string) interface{} {
 	data := make(map[string]interface{})
 
+	data["Name"] = repoName
 	data["Secrets"] = secrets
 	return data
 }
