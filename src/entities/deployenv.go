@@ -120,7 +120,6 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 	var globalErr *multierror.Error
 	var err error
 
-	var secrets map[string]string
 	var imagesReplaces map[string]string
 	var ingressesReplace []*infra.IngressReplacement
 	result := []DeploymentResult{}
@@ -130,9 +129,7 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 		// generate deployment data
 		appDeployPath := infra.GetYAMLApplicationPath(k.Name, d.eventRef.Type)
 		finalDeployedPath := infra.GetYAMLFinalKustomizePath(k.Name, d.eventRef.Type)
-		if secrets, err = GetSecretsDeploy(appDeployPath); err != nil {
-			globalErr = multierror.Append(globalErr, err)
-		}
+		secrets := GetSecretsDeploy(d.Repository.GitOpsRules.Secrets)
 		if imagesReplaces, err = GetImagesTagReplace(appDeployPath, d.Repository.Name, d.eventRef.CommitShortSHA); err != nil {
 			globalErr = multierror.Append(globalErr, err)
 		}
