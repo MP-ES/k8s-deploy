@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 )
 
-const regexSearchImageLine = `^( )*image: .*$`
+const regexSearchImageLine = `^( )*(- )*image: .*$`
 const regexSearchImageNameInLine = `^.*/%s/(?P<image>.*)$`
 
 type Image struct {

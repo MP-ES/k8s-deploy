@@ -5,6 +5,7 @@ import (
 	"k8s-deploy/entities"
 	"k8s-deploy/infra"
 	"os"
+	"strings"
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/sethvargo/go-githubactions"
@@ -21,6 +22,22 @@ func setLogging() {
 
 	backend.SetLevel(logging.ERROR, "")
 	logging.SetBackend(backend)
+}
+
+func getStrErrorDeployment(results *[]entities.DeploymentResult) string {
+	var sb strings.Builder
+
+	for _, dr := range *results {
+		if !dr.Deployed {
+			sb.WriteString("Deployment error on k8s-env '")
+			sb.WriteString(dr.K8sEnv)
+			sb.WriteString("':\nError message:\n")
+			sb.WriteString(dr.ErrMsg)
+			sb.WriteString("\nDeployment Log:\n")
+			sb.WriteString(dr.DeploymentLog)
+		}
+	}
+	return sb.String()
 }
 
 func main() {
@@ -52,4 +69,10 @@ func main() {
 	}
 
 	githubactions.SetOutput("status", string(deploymentResultByte))
+
+	errorsStr := getStrErrorDeployment(&deploymentResult)
+	if errorsStr != "" {
+		githubactions.Fatalf(errorsStr)
+	}
+
 }

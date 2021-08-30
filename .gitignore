@@ -19,6 +19,7 @@ action_tests/
 vendor/
 
 # Environments
+*.env
 .env
 .venv
 env/

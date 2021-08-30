@@ -132,8 +132,8 @@ func generateK8sEnvFiles(kEnv string, d DeploymentData) error {
 		return err
 	}
 	// .env
-	if err := addTemplate(".env", kEnv,
-		GenerateEnvTmplData(d.Secrets)); err != nil {
+	if err := addTemplate("secrets.yaml", kEnv,
+		GenerateSecretsTmplData(d.RepoName, d.Secrets)); err != nil {
 		return err
 	}
 
