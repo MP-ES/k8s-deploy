@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: {{ .Namespace }}
 
 commonLabels:
-  build: {{ .CommitSHA }}
+  build: "{{ .CommitSHA }}"
 
 commonAnnotations:
   githubUrl: {{ .GithubUrl }}
@@ -13,7 +13,7 @@ commonAnnotations:
 images:
 {{- range $Name, $NewTag := .ImagesReplace }}
   - name: {{ $Name }}
-    newTag: {{ $NewTag -}}
+    newTag: "{{ $NewTag -}}"
   {{ end }}
 {{- end }}
 
