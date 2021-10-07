@@ -27,7 +27,7 @@ The owner must have a repository named **gitops** with the rules of application 
 
     # Personal access token (PAT) used to manage comments on pull request
     # DEFAULT: ${{ github.token }}
-    gitops-token: ${{ github.token }}
+    repo-token: ${{ github.token }}
 
     # GitHub PAT with read permission on gitOps repository, if gitOps is private
     gitops-token: ${{ secrets.SECRET_NAME }}
