@@ -42,24 +42,25 @@ func GetDeployEnvironment() (DeployEnv, error) {
 	} else {
 		if deployEnv.Repository, err = GetRepository(deployEnv.GitOpsRepository); err != nil {
 			globalErr = multierror.Append(globalErr, err)
-		}
-		if deployEnv.eventRef, err = getEventReference(deployEnv.Repository.Url); err != nil {
-			globalErr = multierror.Append(globalErr, err)
-		}
-		if deployEnv.k8sEnvs, err = GetK8sDeployEnvironments(&deployEnv.GitOpsRepository.AvailableK8sEnvs); err != nil {
-			globalErr = multierror.Append(globalErr, err)
-		}
-		if deployEnv.manifestDir, err = getManifestDir(); err != nil {
-			globalErr = multierror.Append(globalErr, err)
-		}
-		if deployEnv.Strategy, err = GetStrategy(); err != nil {
-			globalErr = multierror.Append(globalErr, err)
-		}
-
-		if globalErr == nil {
-			if err = infra.GenerateInitialDeploymentStructure(&deployEnv.GitOpsRepository.AvailableK8sEnvs,
-				deployEnv.eventRef.Type); err != nil {
+		} else {
+			if deployEnv.eventRef, err = getEventReference(deployEnv.Repository.Url); err != nil {
 				globalErr = multierror.Append(globalErr, err)
+			}
+			if deployEnv.k8sEnvs, err = GetK8sDeployEnvironments(&deployEnv.GitOpsRepository.AvailableK8sEnvs); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+			if deployEnv.manifestDir, err = getManifestDir(); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+			if deployEnv.Strategy, err = GetStrategy(); err != nil {
+				globalErr = multierror.Append(globalErr, err)
+			}
+
+			if globalErr == nil {
+				if err = infra.GenerateInitialDeploymentStructure(&deployEnv.GitOpsRepository.AvailableK8sEnvs,
+					deployEnv.eventRef.Type); err != nil {
+					globalErr = multierror.Append(globalErr, err)
+				}
 			}
 		}
 	}
