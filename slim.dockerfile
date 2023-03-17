@@ -3,7 +3,7 @@
 #
 
 # Specify the version of Go to use
-FROM golang:1.16 AS builder
+FROM golang:1.19 AS builder
 
 # Install upx (upx.github.io) to compress the compiled action
 RUN apt-get update && apt-get --no-install-recommends -y install upx && rm -rf /var/lib/apt/lists/*

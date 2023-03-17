@@ -1,34 +1,34 @@
-name: "Deploy to On-Premises Kubernetes cluster"
-description: "Deploys an application in an On-Premises Kubernetes cluster based in a GitOps repository"
+name: 'Deploy to On-Premises Kubernetes cluster'
+description: 'Deploys an application in an On-Premises Kubernetes cluster based in a GitOps repository'
 author: MP-ES
 branding:
-  icon: "command"
-  color: "purple"
+  icon: 'command'
+  color: 'purple'
 inputs:
   k8s-envs:
-    description: "Multiline input where each line contains the name of a Kubernetes environment defined in the GitOps repository"
+    description: 'Multiline input where each line contains the name of a Kubernetes environment defined in the GitOps repository'
     required: true
   manifest-dir:
-    description: "Path to the manifest directory, with files to be used for deployment"
+    description: 'Path to the manifest directory, with files to be used for deployment'
     required: false
-    default: "kubernetes"
+    default: 'kubernetes'
   repo-token:
-    description: "Personal access token (PAT) used to manage comments on pull request"
+    description: 'Personal access token (PAT) used to manage comments on pull request'
     required: false
     default: ${{ github.token }}
   gitops-token:
     description: "GitHub PAT with read permission on GitOps repository, if it's private"
     required: false
   strategy:
-    description: "Deployment strategy to be used. Allowed values are none, canary and blue-green"
+    description: 'Deployment strategy to be used. Allowed values are none, canary and blue-green'
     required: false
-    default: "none"
+    default: 'none'
 outputs:
   status:
-    description: "JSON object with the status of deployment by K8S environment"
+    description: 'JSON object with the status of deployment by K8S environment'
 runs:
   using: docker
-  image: docker://mpespiritosanto/k8s-deploy:1.0.2
+  image: docker://mpespiritosanto/k8s-deploy:1.0.3
   args:
     - ${{ inputs.k8s-envs }}
     - ${{ inputs.manifest-dir }}
