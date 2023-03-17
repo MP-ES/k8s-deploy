@@ -9,24 +9,31 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
       - name: Validate docker image tag on action.yml file
         run: echo "current_action_docker_tag=$(echo refs/tags/v$(grep 'image' action.yml | cut -d':' -f4 | xargs))" >> $GITHUB_ENV
+
       - if: ${{ env.current_action_docker_tag != github.ref  }}
         run: echo "::error ::Current action docker image tag '${{ env.current_action_docker_tag }}' is different from expected '${{ github.ref }}' value";exit 1
 
   release:
     runs-on: ubuntu-latest
+
     needs:
       - validate
+
     if: ${{ success() }}
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
       - name: Login to DockerHub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
@@ -36,8 +43,9 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern=v{{major}}
+
       - name: Build and push
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           file: slim.dockerfile
           context: .

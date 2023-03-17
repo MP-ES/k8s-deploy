@@ -6,11 +6,15 @@
 FROM golang:1.16 AS builder
 
 # Install upx (upx.github.io) to compress the compiled action
-RUN apt-get update && apt-get --no-install-recommends -y install upx &&  rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get --no-install-recommends -y install upx && rm -rf /var/lib/apt/lists/*
 
 # Install kubectl
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
   install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+# Install yq
+RUN curl -L "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64" -o yq && \
+  install -o root -g root -m 0755 yq /usr/local/bin/yq
 
 # Disable CGO
 ENV CGO_ENABLED=0
@@ -54,6 +58,9 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # Copy the kubectl
 COPY --from=builder /usr/local/bin/kubectl /usr/local/bin/kubectl
+
+# Copy the yq
+COPY --from=builder /usr/local/bin/yq /usr/local/bin/yq
 
 # Copy over the compiled action from the first step
 COPY --from=builder /bin/action /bin/action
