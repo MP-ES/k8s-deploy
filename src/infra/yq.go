@@ -2,10 +2,10 @@ package infra
 
 import (
 	"bytes"
+	"fmt"
 	"k8s-deploy/utils"
+	"os/exec"
 	"strings"
-
-	"github.com/mikefarah/yq/v4/pkg/yqlib"
 )
 
 func YqSearchQueryInFileWithStringSliceReturn(fileName string, query string) ([]string, error) {
@@ -38,13 +38,18 @@ func YqSearchQueryInFileWithJsonReturn(fileName string, query string) (*bytes.Bu
 }
 
 func runYq(fileName string, query string, outputToJSON bool) (*bytes.Buffer, error) {
-	var out bytes.Buffer
+	var outputParam string
 
-	printer := yqlib.NewPrinter(&out, outputToJSON, true, false, 0, false)
-	streamEvaluator := yqlib.NewStreamEvaluator()
-
-	if err := streamEvaluator.EvaluateFiles(query, []string{fileName}, printer, true); err != nil {
-		return nil, err
+	if outputToJSON {
+		outputParam = "json"
+	} else {
+		outputParam = "yaml"
 	}
-	return &out, nil
+
+	cmdRes, err := exec.Command("yq", "-I0", "-o="+outputParam, query, fileName).CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("error on run yq: %s", cmdRes)
+	}
+
+	return bytes.NewBuffer(cmdRes), nil
 }

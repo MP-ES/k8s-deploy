@@ -13,9 +13,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
           version: latest
           working-directory: src
@@ -25,19 +26,23 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.16
+          go-version: 1.19
+
       - name: Run tests
         run: pushd src && go test -v -race -covermode=atomic -coverprofile=coverage.out ./... && popd
         env:
           TOKEN_TEST: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
           directory: src
+
       - name: Run vet
         run: pushd src && go vet -v ./... && popd
