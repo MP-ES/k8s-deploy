@@ -4,32 +4,20 @@ import (
 	"fmt"
 	"k8s-deploy/utils"
 	"os"
+	"os/exec"
 	"path/filepath"
-
-	"sigs.k8s.io/kustomize/api/krusty"
-	"sigs.k8s.io/kustomize/api/resmap"
-	"sigs.k8s.io/kustomize/kyaml/filesys"
 )
 
 func runKustomize(buildDir string, destinationFile string) error {
-	var res resmap.ResMap
-	var yaml []byte
 	var err error
 
-	kustomizer := krusty.MakeKustomizer(krusty.MakeDefaultOptions())
-	fSys := filesys.MakeFsOnDisk()
-
-	// build kustomize
-	if res, err = kustomizer.Run(fSys, buildDir); err != nil {
-		return fmt.Errorf("error on build kustomize: %s", err.Error())
+	cmdRes, err := exec.Command("kubectl", "kustomize", buildDir).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error on run kustomize: %s", cmdRes)
 	}
 
-	// save result
-	if yaml, err = res.AsYaml(); err != nil {
-		return fmt.Errorf("error on generate YAML kustomize: %s", err.Error())
-	}
-	if err = fSys.WriteFile(destinationFile, yaml); err != nil {
-		return fmt.Errorf("error on save YAML kustomize: %s", err.Error())
+	if err = os.WriteFile(destinationFile, cmdRes, 0644); err != nil {
+		return fmt.Errorf("error on save YAML kustomize result: %s", err.Error())
 	}
 
 	return nil

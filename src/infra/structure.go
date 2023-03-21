@@ -1,7 +1,6 @@
 package infra
 
 import (
-	"io/ioutil"
 	"k8s-deploy/utils"
 	"os"
 	"path/filepath"
@@ -59,7 +58,7 @@ func ClearDeploy() {
 }
 
 func CreateKubeconfigFile(kEnv string, content []byte) bool {
-	return ioutil.WriteFile(GetKubeconfigPath(kEnv), content, 0600) == nil
+	return os.WriteFile(GetKubeconfigPath(kEnv), content, 0600) == nil
 }
 
 func GenerateInitialDeploymentStructure(kEnvs *map[string]struct{}, eventType string) error {
