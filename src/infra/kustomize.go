@@ -13,10 +13,10 @@ func runKustomize(buildDir string, destinationFile string) error {
 
 	cmdRes, err := exec.Command("kubectl", "kustomize", buildDir).CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("error on run kustomize: %s", cmdRes)
+		return fmt.Errorf("error on run kustomize command: %s", cmdRes)
 	}
 
-	if err = os.WriteFile(destinationFile, cmdRes, 0644); err != nil {
+	if err = os.WriteFile(destinationFile, cmdRes, 0600); err != nil {
 		return fmt.Errorf("error on save YAML kustomize result: %s", err.Error())
 	}
 
