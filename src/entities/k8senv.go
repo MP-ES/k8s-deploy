@@ -78,7 +78,7 @@ func getK8sEnv(availableK8sEnvs *map[string]struct{}, s string) (*K8sEnv, error)
 func GetK8sDeployEnvironments(availableK8sEnvs *map[string]struct{}) ([]*K8sEnv, error) {
 	k8sEnvs := []*K8sEnv{}
 
-	k8sEnvsInput := githubactions.GetInput("k8s-envs")
+	k8sEnvsInput := githubactions.GetInput("k8s_envs")
 	if k8sEnvsInput == "" {
 		return nil, errors.New("'k8s-env' is required")
 	}

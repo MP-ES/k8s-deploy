@@ -241,7 +241,7 @@ func getEventReference(repoUrl string) (*eventRef, error) {
 }
 
 func getManifestDir() (*string, error) {
-	manifestDir := githubactions.GetInput("manifest-dir")
+	manifestDir := githubactions.GetInput("manifest_dir")
 	if manifestDir == "" {
 		manifestDir = manifestDirDefault
 	}
@@ -252,7 +252,7 @@ func getManifestDir() (*string, error) {
 		return nil, fmt.Errorf("couldn't access '%s' in workspace: %s", manifestDir, err.Error())
 	}
 	if !fileInfo.IsDir() {
-		return nil, errors.New("manifest-dir isn't a folder")
+		return nil, errors.New("manifest_dir isn't a folder")
 	}
 
 	return &manifestFullPath, nil

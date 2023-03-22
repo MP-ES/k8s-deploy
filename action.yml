@@ -5,18 +5,18 @@ branding:
   icon: 'command'
   color: 'purple'
 inputs:
-  k8s-envs:
+  k8s_envs:
     description: 'Multiline input where each line contains the name of a Kubernetes environment defined in the GitOps repository'
     required: true
-  manifest-dir:
+  manifest_dir:
     description: 'Path to the manifest directory, with files to be used for deployment'
     required: false
     default: 'kubernetes'
-  repo-token:
+  repo_token:
     description: 'Personal access token (PAT) used to manage comments on pull request'
     required: false
     default: ${{ github.token }}
-  gitops-token:
+  gitops_token:
     description: "GitHub PAT with read permission on GitOps repository, if it's private"
     required: false
   strategy:
@@ -30,8 +30,8 @@ runs:
   using: docker
   image: docker://mpespiritosanto/k8s-deploy:1.0.3
   args:
-    - ${{ inputs.k8s-envs }}
-    - ${{ inputs.manifest-dir }}
-    - ${{ inputs.repo-token }}
-    - ${{ inputs.gitops-token }}
+    - ${{ inputs.k8s_envs }}
+    - ${{ inputs.manifest_dir }}
+    - ${{ inputs.repo_token }}
+    - ${{ inputs.gitops_token }}
     - ${{ inputs.strategy }}

@@ -34,7 +34,7 @@ func GetGitOpsRepository() (*GitOpsRepository, error) {
 	}
 
 	// check if repository exists
-	token := githubactions.GetInput("gitops-token")
+	token := githubactions.GetInput("gitops_token")
 	gitRepo, err := utils.GetGithubRepository(token, repoOwner, gitOpsStr)
 	if err != nil {
 		return nil, err
