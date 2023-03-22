@@ -14,23 +14,23 @@ The owner must have a repository named **gitops** with the rules of application 
 
 ```yaml
 - name: Deploy on on-premises K8S
-  uses: MP-ES/k8s-deploy@v1
+  uses: MP-ES/k8s-deploy@v2
   with:
     # Multiline input where each line contains the name of a Kubernetes environment defined in the GitOps repository
-    k8s-envs: |
+    k8s_envs: |
       env1
       env2
 
     # Path to the manifest directory, with files to be used for deployment
     # DEFAULT: kubernetes
-    manifest-dir: kubernetes
+    manifest_dir: kubernetes
 
     # Personal access token (PAT) used to manage comments on pull request
     # DEFAULT: ${{ github.token }}
-    repo-token: ${{ github.token }}
+    repo_token: ${{ github.token }}
 
     # GitHub PAT with read permission on gitOps repository, if gitOps is private
-    gitops-token: ${{ secrets.SECRET_NAME }}
+    gitops_token: ${{ secrets.SECRET_NAME }}
 
     # Deployment strategy to be used. Allowed values are none, canary and blue-green
     # More details below
@@ -42,7 +42,7 @@ The owner must have a repository named **gitops** with the rules of application 
     app_secret1: ${{ secrets.app_secret1 }}
     app_secret2: ${{ secrets.app_secret2 }}
 
-    # base64 of kubeconfig file for each Kubernetes environment defined in k8s-envs
+    # base64 of kubeconfig file for each Kubernetes environment defined in k8s_envs
     # See below an example of an expected kubeconfig
     base64_kubeconfig_env1: ${{ secrets.base64_kubeconfig_env1 }}
     base64_kubeconfig_env2: ${{ secrets.base64_kubeconfig_env2 }}

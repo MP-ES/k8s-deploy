@@ -36,12 +36,12 @@ func TestGetK8sDeployEnvironments(t *testing.T) {
 	}
 
 	for _, test := range k8sDeployEnvsTests {
-		orig := os.Getenv("INPUT_K8S-ENVS")
-		os.Setenv("INPUT_K8S-ENVS", test.inputK8sEnvs)
+		orig := os.Getenv("INPUT_K8S_ENVS")
+		os.Setenv("INPUT_K8S_ENVS", test.inputK8sEnvs)
 		for _, e := range test.expectedK8sEnvs {
 			os.Setenv(fmt.Sprintf("base64_kubeconfig_%s", e.Name), "test")
 		}
-		t.Cleanup(func() { os.Setenv("INPUT_K8S-ENVS", orig) })
+		t.Cleanup(func() { os.Setenv("INPUT_K8S_ENVS", orig) })
 
 		k8sEnvs, err := entities.GetK8sDeployEnvironments(&availableK8sEnvs)
 

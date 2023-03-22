@@ -33,7 +33,7 @@ func GetRepository(gitOpsRepo *GitOpsRepository) (*Repository, error) {
 		return nil, errors.New("repository name format different from expected")
 	}
 	repository.Url = fmt.Sprint(utils.GithubUrl, repoName)
-	repository.AccessToken = githubactions.GetInput("repo-token")
+	repository.AccessToken = githubactions.GetInput("repo_token")
 
 	// load gitOps Schema
 	if err := repository.loadGitOpsSchema(gitOpsRepo); err != nil {
