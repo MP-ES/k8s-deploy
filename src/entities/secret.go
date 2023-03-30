@@ -22,6 +22,7 @@ func (s *Secret) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if err := unmarshal(&output); err != nil {
 		return err
 	}
+
 	s.Name = output
 	return nil
 }
@@ -36,13 +37,11 @@ func ValidateSecretsFromAppDeploy(appDeployPath string, repoRules *RepositoryRul
 		globalErr = multierror.Append(globalErr, err)
 	}
 
-	fmt.Printf("%+v", secretsName)
-	os.Exit(1)
-
 	if len(secretsName) > 1 {
 		globalErr = multierror.Append(globalErr,
 			fmt.Errorf("more than one k8s secret by repository is not allowed. current k8s-secrets: %v", secretsName))
 	}
+
 	if len(secretsName) > 0 && secretsName[0] != repoRules.Name {
 		globalErr = multierror.Append(globalErr,
 			fmt.Errorf("the k8s-secret name must be the same as the repository name. Current name: %s; expected: %s", secretsName[0], repoRules.Name))

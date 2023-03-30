@@ -143,3 +143,15 @@ go test -race -v -covermode=atomic -coverprofile=coverage.out ./...
 # From src directory
 go tool cover -html=coverage.out
 ```
+
+### Update dependencies
+
+```shell
+cd src
+
+# Update dependencies
+go get -u
+
+# Update go.mod
+go mod tidy
+```
