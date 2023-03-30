@@ -21,6 +21,8 @@ func YqSearchQueryInFileWithStringSliceReturn(fileName string, query string) ([]
 	returnedSlice = utils.SliceMapStrFunction(returnedSlice, strings.TrimSpace)
 	// remove empty
 	returnedSlice = utils.SliceRemoveEmptyElements(returnedSlice)
+	// remove file header
+	returnedSlice = utils.SliceRemoveElement(returnedSlice, "---")
 	// remove duplicates
 	returnedSlice = utils.SliceRemoveDuplicateElements(returnedSlice)
 

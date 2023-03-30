@@ -35,6 +35,10 @@ func ValidateSecretsFromAppDeploy(appDeployPath string, repoRules *RepositoryRul
 	if err != nil {
 		globalErr = multierror.Append(globalErr, err)
 	}
+
+	fmt.Printf("%+v", secretsName)
+	os.Exit(1)
+
 	if len(secretsName) > 1 {
 		globalErr = multierror.Append(globalErr,
 			fmt.Errorf("more than one k8s secret by repository is not allowed. current k8s-secrets: %v", secretsName))
@@ -44,7 +48,7 @@ func ValidateSecretsFromAppDeploy(appDeployPath string, repoRules *RepositoryRul
 			fmt.Errorf("the k8s-secret name must be the same as the repository name. Current name: %s; expected: %s", secretsName[0], repoRules.Name))
 	}
 
-	// checking if all secrets was declared and was setted as env
+	// checking if all secrets were declared and were set as env
 	secrets, err := infra.YqSearchQueryInFileWithStringSliceReturn(appDeployPath,
 		".spec.jobTemplate.spec.template.spec.containers[].env[].valueFrom.secretKeyRef.key,.spec.template.spec.containers[].env[].valueFrom.secretKeyRef.key,.spec.template.spec.volumes[].secret.items[].key")
 	if err != nil {

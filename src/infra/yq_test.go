@@ -29,6 +29,7 @@ var searchInFileSliceTests = [...]searchInFileSliceTest{
 		"limits.memory: 100Mi"},
 		""},
 	{"../../testdata/repository-min.yaml", ".images[]", []string{"docker_image"}, ""},
+	{"../../testdata/repository-multiple-files.yaml", ".images[]", []string{"docker_image1", "docker_image2"}, ""},
 	{"../../testdata/repository-min.yaml", ".resources-quotas", []string{"limits.cpu: 100m", "limits.memory: 100Mi"}, ""},
 }
 

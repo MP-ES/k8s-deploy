@@ -30,6 +30,20 @@ func SliceRemoveEmptyElements(s []string) []string {
 	return r
 }
 
+func SliceRemoveElement(s []string, e string) []string {
+	if s == nil {
+		return s
+	}
+
+	var r []string = []string{}
+	for _, str := range s {
+		if str != e {
+			r = append(r, str)
+		}
+	}
+	return r
+}
+
 func SliceRemoveDuplicateElements(s []string) []string {
 	if s == nil {
 		return s
