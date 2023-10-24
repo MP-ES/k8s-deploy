@@ -1,5 +1,5 @@
 # Specify the version of Go to use
-FROM golang:1.19
+FROM golang:1.20
 
 # set envs
 ENV TEMPLATES_DIR=/src/templates
