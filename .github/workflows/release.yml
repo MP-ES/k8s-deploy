@@ -10,7 +10,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Validate docker image tag on action.yml file
         run: echo "current_action_docker_tag=$(echo refs/tags/v$(grep 'image' action.yml | cut -d':' -f4 | xargs))" >> $GITHUB_ENV
@@ -27,7 +27,7 @@ jobs:
     if: ${{ success() }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Login to DockerHub
         uses: docker/login-action@v2
