@@ -2,7 +2,7 @@
 
 Action that deploys an application in an On-Premises Kubernetes cluster based in a GitOps repository.
 
-[![Coverage](https://codecov.io/gh/MP-ES/k8s-deploy/branch/main/graphs/badge.svg?branch=main)](https://codecov.io/gh/MP-ES/k8s-deploy)
+[![Codecov](https://codecov.io/gh/MP-ES/k8s-deploy/graph/badge.svg?token=HSN90LV4NG)](https://codecov.io/gh/MP-ES/k8s-deploy)
 [![Integration](https://github.com/MP-ES/k8s-deploy/workflows/Integration/badge.svg)](https://github.com/MP-ES/k8s-deploy/actions?query=workflow%3AIntegration)
 [![Release](https://github.com/MP-ES/k8s-deploy/workflows/Release/badge.svg)](https://github.com/MP-ES/k8s-deploy/actions?query=workflow%3ARelease)
 
