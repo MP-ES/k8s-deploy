@@ -52,20 +52,20 @@ func main() {
 	setLogging()
 
 	if deployenv, err = entities.GetDeployEnvironment(); err != nil {
-		githubactions.Fatalf(err.Error())
+		githubactions.Fatalf("%v", err)
 	}
 
 	if err = deployenv.ValidateRules(); err != nil {
-		githubactions.Fatalf(err.Error())
+		githubactions.Fatalf("%v", err)
 	}
 
 	deploymentResult := deployenv.Apply()
 	if deploymentResultByte, err = json.Marshal(deploymentResult); err != nil {
-		githubactions.Fatalf(err.Error())
+		githubactions.Fatalf("%v", err)
 	}
 
 	if err = deployenv.PostApplyActions(&deploymentResult); err != nil {
-		githubactions.Warningf(err.Error())
+		githubactions.Warningf("%v", err)
 	}
 
 	githubactions.SetOutput("status", string(deploymentResultByte))
