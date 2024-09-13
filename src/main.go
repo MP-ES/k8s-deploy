@@ -52,27 +52,26 @@ func main() {
 	setLogging()
 
 	if deployenv, err = entities.GetDeployEnvironment(); err != nil {
-		githubactions.Fatalf("%v", err)
+		githubactions.Fatalf("Error getting deploy environment: %v", err)
 	}
 
 	if err = deployenv.ValidateRules(); err != nil {
-		githubactions.Fatalf("%v", err)
+		githubactions.Fatalf("Error validating rules: %v", err)
 	}
 
 	deploymentResult := deployenv.Apply()
 	if deploymentResultByte, err = json.Marshal(deploymentResult); err != nil {
-		githubactions.Fatalf("%v", err)
+		githubactions.Fatalf("Error marshaling deployment result: %v", err)
 	}
 
 	if err = deployenv.PostApplyActions(&deploymentResult); err != nil {
-		githubactions.Warningf("%v", err)
+		githubactions.Warningf("Warning during post-apply actions: %v", err)
 	}
 
 	githubactions.SetOutput("status", string(deploymentResultByte))
 
 	errorsStr := getStrErrorDeployment(&deploymentResult)
 	if errorsStr != "" {
-		githubactions.Fatalf(errorsStr)
+		githubactions.Fatalf("Deployment errors: %s", errorsStr)
 	}
-
 }
