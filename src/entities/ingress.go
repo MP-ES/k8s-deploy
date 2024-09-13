@@ -58,8 +58,14 @@ func GetDeployedIngresses(finalDeployedPath string, repository *Repository, kEnv
 	var globalErr *multierror.Error
 	ingresses := []string{}
 
+	// bail if no ingress configuration
+	if repository.GitOpsRules.Ingresses == nil {
+		return ingresses, nil
+	}
+
+	// bail if no ingress for this environment
 	if _, ok := (*repository.GitOpsRules.Ingresses)[kEnv.Name]; !ok {
-		return ingresses, nil // don't have ingress
+		return ingresses, nil
 	}
 
 	// get ingresses hosts
