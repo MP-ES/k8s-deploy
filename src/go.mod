@@ -1,6 +1,7 @@
 module k8s-deploy
 
 go 1.22
+toolchain go1.24.1
 
 require (
 	github.com/go-test/deep v1.1.0
@@ -16,5 +17,5 @@ require (
 require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
-	golang.org/x/crypto v0.27.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
 )
