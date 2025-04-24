@@ -6,7 +6,16 @@
 FROM golang:1.23-bookworm AS builder
 
 # Install upx (upx.github.io) to compress the compiled action
-RUN apt-get update && apt-get --no-install-recommends -y install upx && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get --no-install-recommends -y install ca-certificates wget xz-utils && \
+    LATEST_VERSION=$(wget -qO- https://api.github.com/repos/upx/upx/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")') && \
+    wget -q https://github.com/upx/upx/releases/download/${LATEST_VERSION}/upx-${LATEST_VERSION#v}-amd64_linux.tar.xz && \
+    mkdir -p /tmp/upx && \
+    tar -xf upx-${LATEST_VERSION#v}-amd64_linux.tar.xz -C /tmp/upx --strip-components=1 && \
+    mv /tmp/upx/upx /usr/local/bin/ && \
+    chmod +x /usr/local/bin/upx && \
+    rm -rf /tmp/upx && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install kubectl
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
