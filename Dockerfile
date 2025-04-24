@@ -1,5 +1,5 @@
 # Specify the version of Go to use
-FROM golang:1.22
+FROM golang:1.23
 
 # set envs
 ENV TEMPLATES_DIR=/src/templates

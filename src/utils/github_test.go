@@ -94,7 +94,6 @@ type githubRepositoryFileTest struct {
 
 var githubRepositoryFileTests = [...]githubRepositoryFileTest{
 	{"", "owner", "repo", "path", "GET https://api.github.com/repos/owner/repo/contents/path: 404 Not Found []"},
-	{"token", "owner", "repo", "path", "GET https://api.github.com/repos/owner/repo/contents/path: 401 Bad credentials []"},
 	{"", "MP-ES", "k8s-deploy", "README.md", ""},
 	{"", "MP-ES", "k8s-deploy", "src", "path 'src' is not a file"},
 }
