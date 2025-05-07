@@ -146,6 +146,7 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 			EventUrl:         d.eventRef.Url,
 			LimitCpu:         d.Repository.GitOpsRules.ResourcesQuotas.LimitsCpu,
 			LimitMemory:      d.Repository.GitOpsRules.ResourcesQuotas.LimitsMemory,
+			SkipQuotaDeploy:  d.Repository.GitOpsRules.SkipQuotaDeploy,
 			Secrets:          secrets,
 			ImagesReplace:    imagesReplaces,
 			IngressesReplace: ingressesReplace,
