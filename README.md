@@ -155,3 +155,36 @@ go get -u
 # Update go.mod
 go mod tidy
 ```
+
+### How to test it locally
+
+```shell
+
+# Navigate to the src directory
+cd src
+
+
+```
+
+### How to validate the changes using a pull request
+
+- Create a new branch from main (e.g. `new-feature`).
+
+- In the [action.yml](./action.yml) file, replace the `image` key with the `Dockerfile` path:
+  
+  ```yaml
+  runs:
+    using: "docker"
+    image: "Dockerfile"
+  ```
+
+- Then, in the repository where you want to test the action, call the action using the new branch:
+
+  ```yaml
+  - name: Deploy on on-premises K8S
+    uses: MP-ES/k8s-deploy@new-feature
+    with:
+      # Other parameters...
+  ```
+
+- Don't forget to revert the `image` key in the `action.yml` file to its original state after testing.

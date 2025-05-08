@@ -3,8 +3,9 @@ kind: Kustomization
 
 namespace: {{ .Namespace }}
 
-commonLabels:
-  build: "{{ .CommitSHA }}"
+labels:
+  - pairs:
+      build: "{{ .CommitSHA }}"
 
 commonAnnotations:
   githubUrl: {{ .GithubUrl }}
