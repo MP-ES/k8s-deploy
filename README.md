@@ -163,7 +163,8 @@ go mod tidy
 # Navigate to the src directory
 cd src
 
-
+# Run the app
+go run main.go
 ```
 
 ### How to validate the changes using a pull request

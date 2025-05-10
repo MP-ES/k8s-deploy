@@ -117,7 +117,7 @@ func (d *DeployEnv) ValidateRules() error {
 	return globalErr.ErrorOrNil()
 }
 
-func (d *DeployEnv) Apply() []DeploymentResult {
+func (d *DeployEnv) Apply(dryRunMode bool) []DeploymentResult {
 	var globalErr *multierror.Error
 	var err error
 
@@ -160,6 +160,12 @@ func (d *DeployEnv) Apply() []DeploymentResult {
 		// generate final kustomize
 		if err = infra.KustomizeFinalBuild(k.Name, d.eventRef.Type); err != nil {
 			globalErr = multierror.Append(globalErr, err)
+		}
+
+		// Skip deployment if dry run mode is enabled
+		if dryRunMode {
+			fmt.Printf("Dry run mode enabled, skipping deployment to k8s-env '%s'.\n", k.Name)
+			continue
 		}
 
 		// kubectl apply only if do not have previous errors
