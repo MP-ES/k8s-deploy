@@ -3,8 +3,9 @@ kind: Kustomization
 
 namespace: {{ .Namespace }}
 
-commonLabels:
-  build: "{{ .CommitSHA }}"
+labels:
+  - pairs:
+      build: "{{ .CommitSHA }}"
 
 commonAnnotations:
   githubUrl: {{ .GithubUrl }}
@@ -37,7 +38,9 @@ patches:
 resources:
   - application.yaml
   - namespace.yaml
+  {{ if not .SkipQuotaDeploy -}}
   - resourceQuota.yaml
+  {{- end }}
   {{ if .Secrets -}}
   - secrets.yaml
   {{- end }}

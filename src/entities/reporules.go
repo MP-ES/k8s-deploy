@@ -6,6 +6,7 @@ type RepositoryRules struct {
 	Images          []*Image               `yaml:"images,flow"`
 	Secrets         []*Secret              `yaml:"secrets,flow"`
 	ResourcesQuotas *ResourcesQuotas       `yaml:"resources-quotas"`
+	SkipQuotaDeploy bool                   `yaml:"skip-quota-deploy"`
 	Ingresses       *map[string][]*Ingress `yaml:"ingresses"`
 }
 

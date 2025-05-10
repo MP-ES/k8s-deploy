@@ -5,9 +5,11 @@ import (
 	"k8s-deploy/utils"
 )
 
-func GenerateKustomizationTmplData(repoName string, eventType string, eventIdentifier string,
+func GenerateKustomizationTmplData(
+	repoName string, eventType string, eventIdentifier string,
 	eventSHA string, eventUrl string, secrets map[string]string,
-	imagesReplace map[string]string, ingressesReplace []*IngressReplacement) interface{} {
+	imagesReplace map[string]string, ingressesReplace []*IngressReplacement,
+	skipQuotaDeploy bool) interface{} {
 	data := make(map[string]interface{})
 
 	data["RepoName"] = repoName
@@ -17,6 +19,7 @@ func GenerateKustomizationTmplData(repoName string, eventType string, eventIdent
 	data["ImagesReplace"] = imagesReplace
 	data["IngressesReplace"] = ingressesReplace
 	data["Secrets"] = secrets
+	data["SkipQuotaDeploy"] = skipQuotaDeploy
 
 	return data
 }

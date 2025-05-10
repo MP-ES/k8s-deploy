@@ -5,6 +5,7 @@ import (
 	"k8s-deploy/entities"
 	"k8s-deploy/infra"
 	"os"
+	"strconv"
 	"strings"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -45,8 +46,14 @@ func main() {
 	var deploymentResultByte []byte
 	var err error
 
-	// destroy the deployment directory to avoid keep sensitive data
-	defer infra.ClearDeploy()
+	var dryRunMode, _ = strconv.ParseBool(os.Getenv("DRY_RUN_MODE"))
+
+	if !dryRunMode {
+		// destroy the deployment directory to avoid keep sensitive data
+		defer infra.ClearDeploy()
+	} else {
+		println("Dry run mode enabled, skipping deployment directory cleanup.")
+	}
 
 	// set logging
 	setLogging()
@@ -59,16 +66,20 @@ func main() {
 		githubactions.Fatalf("Error validating rules: %v", err)
 	}
 
-	deploymentResult := deployenv.Apply()
+	deploymentResult := deployenv.Apply(dryRunMode)
 	if deploymentResultByte, err = json.Marshal(deploymentResult); err != nil {
 		githubactions.Fatalf("Error marshaling deployment result: %v", err)
 	}
 
-	if err = deployenv.PostApplyActions(&deploymentResult); err != nil {
-		githubactions.Warningf("Warning during post-apply actions: %v", err)
-	}
+	if !dryRunMode {
+		if err = deployenv.PostApplyActions(&deploymentResult); err != nil {
+			githubactions.Warningf("Warning during post-apply actions: %v", err)
+		}
 
-	githubactions.SetOutput("status", string(deploymentResultByte))
+		githubactions.SetOutput("status", string(deploymentResultByte))
+	} else {
+		println("Dry run mode enabled, skipping post-apply actions.")
+	}
 
 	errorsStr := getStrErrorDeployment(&deploymentResult)
 	if errorsStr != "" {
