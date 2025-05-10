@@ -38,7 +38,9 @@ patches:
 resources:
   - application.yaml
   - namespace.yaml
+  {{ if not .SkipQuotaDeploy -}}
   - resourceQuota.yaml
+  {{- end }}
   {{ if .Secrets -}}
   - secrets.yaml
   {{- end }}

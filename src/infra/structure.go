@@ -118,7 +118,10 @@ func generateK8sEnvFiles(kEnv string, d DeploymentData) error {
 
 	// kustomization.yaml
 	if err := addTemplate("kustomization.yaml", kEnv,
-		GenerateKustomizationTmplData(d.RepoName, d.EventType, d.EventIdentifier, d.EventSHA, d.EventUrl, d.Secrets, d.ImagesReplace, d.IngressesReplace)); err != nil {
+		GenerateKustomizationTmplData(
+			d.RepoName, d.EventType, d.EventIdentifier,
+			d.EventSHA, d.EventUrl, d.Secrets, d.ImagesReplace,
+			d.IngressesReplace, d.SkipQuotaDeploy)); err != nil {
 		return err
 	}
 
