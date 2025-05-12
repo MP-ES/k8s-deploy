@@ -85,6 +85,8 @@ func GetK8sDeployEnvironments(availableK8sEnvs *map[string]struct{}) ([]*K8sEnv,
 
 	envs := strings.Split(k8sEnvsInput, "\n")
 	for _, e := range envs {
+		e = strings.TrimSpace(e)
+
 		if kEvent, err := getK8sEnv(availableK8sEnvs, e); err == nil {
 			k8sEnvs = append(k8sEnvs, kEvent)
 		} else {
