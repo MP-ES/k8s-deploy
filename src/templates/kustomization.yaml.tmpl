@@ -6,6 +6,7 @@ namespace: {{ .Namespace }}
 labels:
   - pairs:
       build: "{{ .CommitSHA }}"
+    includeSelectors: true
 
 commonAnnotations:
   githubUrl: {{ .GithubUrl }}
